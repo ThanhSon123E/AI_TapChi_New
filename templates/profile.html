@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    body {
+      background: var(--bg);
+      color: var(--text-2);
+      position: relative;
+    }
+
+    /* Ambient Orbs */
+    [data-theme="dark"] body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: -10%;
+      width: 50%; height: 50%;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.07) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="dark"] body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -10%;
+      width: 60%; height: 60%;
+      background: radial-gradient(circle, rgba(124, 62, 158, 0.06) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="light"] body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: -10%;
+      width: 55%; height: 55%;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="light"] body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -10%;
+      width: 65%; height: 65%;
+      background: radial-gradient(circle, rgba(226, 192, 106, 0.04) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── PROFILE UI ── */
+    .profile-hero {
+      background: linear-gradient(135deg, rgba(201, 168, 76, 0.15), rgba(8, 11, 17, 0.05));
+      height: 180px;
+      position: relative;
+      margin-bottom: 80px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-header-card {
+      background: var(--glass-bg) !important;
+      backdrop-filter: blur(35px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+      border-radius: var(--radius-lg) !important;
+      padding: 30px;
+      display: flex;
+      align-items: flex-end;
+      gap: 30px;
+      margin-top: -100px;
+      box-shadow: var(--shadow-md) !important;
+      border: 1px solid var(--glass-border) !important;
+      transition: all 0.4s var(--ease-out) !important;
+    }
+
+    .profile-header-card:hover {
+      box-shadow: var(--shadow-lg) !important;
+      transform: translateY(-2px);
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      flex-shrink: 0;
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid var(--surface);
+      box-shadow: var(--shadow-md);
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      font-family: 'Playfair Display', serif;
+      color: #12110D;
+    }
+
+    .avatar-badge {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      width: 32px;
+      height: 32px;
+      background: var(--surface);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .header-info { flex: 1; padding-bottom: 10px; }
+    .header-info h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      color: var(--text-1);
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+    .header-info p { color: var(--text-3); font-size: 15px; }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--surface-2);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 15px;
+      color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+
+    .badge-pill.google { color: #DB4437; background: rgba(219, 68, 55, 0.08); border: 1px solid rgba(219, 68, 55, 0.15); }
+
+    /* ── FORM SECTIONS ── */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 24px;
+      margin-top: 30px;
+      margin-bottom: 60px;
+    }
+
+    @media (max-width: 850px) {
+      .profile-grid { grid-template-columns: 1fr; }
+      .profile-header-card { flex-direction: column; align-items: center; text-align: center; }
+    }
+
+    .form-card {
+      background: var(--glass-bg) !important;
+      backdrop-filter: blur(35px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+      border-radius: var(--radius-lg) !important;
+      padding: 30px;
+      border: 1px solid var(--glass-border) !important;
+      box-shadow: var(--shadow-sm) !important;
+      transition: all 0.4s var(--ease-out) !important;
+    }
+
+    .form-card:hover {
+      box-shadow: var(--shadow-md) !important;
+      transform: translateY(-2px);
+    }
+
+    .form-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--text-1);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+    }
+
+    .form-card h3 i { color: var(--gold); }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      color: var(--text-3);
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text-1);
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: var(--surface);
+      box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15);
+    }
+
+    .password-wrapper { position: relative; }
+    .toggle-password {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--text-3);
+      cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;
+      transition: color .2s; z-index: 10;
+    }
+    .toggle-password:hover { color: var(--gold); }
+    .form-input[type="password"] { padding-right: 40px; }
+
+    .form-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-update {
+      background: linear-gradient(135deg, var(--gold), #A8882A);
+      color: #080B11 !important;
+      border: none;
+      height: 50px;
+      padding: 0 30px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out);
+      width: 100%;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(201, 168, 76, 0.2);
+    }
+
+    .btn-update:hover { 
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      transform: translateY(-2px); 
+      box-shadow: 0 8px 25px rgba(201, 168, 76, 0.35); 
+    }
+
+    .google-notice {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      gap: 15px;
+      font-size: 14px;
+      color: var(--text-2);
+    }
+
+    .google-notice i { color: #4285F4; font-size: 24px; }
+
+    /* ── FLASH MESSAGES ── */
+    .flash-box {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .flash-item {
+      padding: 15px 25px;
+      border-radius: 100px;
+      background: var(--surface);
+      box-shadow: var(--shadow-md);
+      border-left: 4px solid var(--gold);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-1);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="flash-box">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for cat, msg in messages %}
+    <div class="flash-item" style="border-left-color: {{ 'var(--gold)' if cat == 'success' else '#DB4437' }}">
+      {{ msg }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <div class="profile-hero"></div>
+
+  <div class="profile-container">
+    <div class="profile-header-card">
+      <div class="avatar-wrapper">
+        {% if current_user.picture %}
+        <img src="{{ current_user.picture }}" class="avatar-img" alt="Avatar">
+        {% else %}
+        <div class="avatar-img">{{ current_user.name[0].upper() if current_user.name else 'U' }}</div>
+        {% endif %}
+        
+        <div class="avatar-badge">
+          {% if current_user.auth_type == 'google' %}
+          <img src="https://www.google.com/favicon.ico" width="16" height="16" alt="G">
+          {% else %}
+          <i class="fas fa-shield-alt" style="color: var(--gold); font-size: 14px;"></i>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="header-info">
+        <h1>{{ current_user.name }}</h1>
+        <p>{{ current_user.email }}</p>
+        
+        {% if current_user.auth_type == 'google' %}
+        <div class="badge-pill google">
+          <i class="fab fa-google"></i> Google Account
+        </div>
+        {% else %}
+        <div class="badge-pill">
+          <i class="fas fa-user-shield"></i> System Account
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <form action="{{ url_for('profile') }}" method="POST">
+      <div class="profile-grid">
+        <div class="form-card">
+          <h3><i class="fas fa-id-card"></i> Personal Information</h3>
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" class="form-input" value="{{ current_user.name }}" required>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" class="form-input" value="{{ current_user.email }}" disabled>
+          </div>
+          <button type="submit" class="btn-update">Update Profile</button>
+        </div>
+
+        <div class="form-card">
+          <h3><i class="fas fa-lock"></i> Security</h3>
+          
+          {% if current_user.auth_type == 'google' %}
+          <div class="google-notice">
+            <i class="fab fa-google"></i>
+            <div>
+              <p style="font-weight: 700; margin-bottom: 5px;">Google Login</p>
+              <p style="line-height: 1.4;">You do not need to manage a password here. Security changes should be made via your Google Account.</p>
+            </div>
+          </div>
+          {% else %}
+          <div class="form-group">
+            <label for="old_password">Old Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="old_password" name="old_password" class="form-input" placeholder="Enter current password">
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('old_password', this)">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="new_password">New Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="new_password" name="new_password" class="form-input" placeholder="Minimum 6 characters">
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('new_password', this)">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Re-enter new password">
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('confirm_password', this)">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}

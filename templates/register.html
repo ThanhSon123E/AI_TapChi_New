@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng Ký Tài Khoản — AI Magazine Creator{% endblock %}
+
+{% block extra_css %}
+<style>
+    body { background: var(--bg); overflow-x: hidden; }
+
+    .auth-container {
+      min-height: calc(100vh - 64px); 
+      display: grid; 
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+
+    @media (max-width: 992px) {
+      .auth-container { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { padding: 3rem 1.5rem; }
+    }
+
+    /* ── LEFT PANEL — PREMIUM ART COVER ── */
+    .left-panel {
+      position: relative; 
+      overflow: hidden;
+      background-color: #080B11;
+      background-image: linear-gradient(135deg, rgba(8, 11, 17, 0.45) 20%, rgba(8, 11, 17, 0.85) 80%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1000');
+      background-size: cover;
+      background-position: center;
+      display: flex; 
+      flex-direction: column;
+      justify-content: space-between; 
+      padding: 4rem;
+      box-sizing: border-box;
+    }
+
+    /* Floating Grid overlay */
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Glassmorphic Magazine Page Mockup */
+    .magazine-mockup-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      perspective: 1000px;
+      z-index: 2;
+    }
+
+    .magazine-page-glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 
+          0 35px 70px rgba(0,0,0,0.6), 
+          inset 0 1px 0 rgba(255,255,255,0.1),
+          0 0 30px rgba(201, 168, 76, 0.03);
+      transform: rotateY(-6deg) rotateX(2deg);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .magazine-mockup-wrapper:hover .magazine-page-glass {
+      transform: rotateY(0deg) rotateX(0deg) translateY(-6px);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 
+          0 40px 80px rgba(0,0,0,0.7), 
+          0 0 40px rgba(201, 168, 76, 0.1);
+    }
+
+    /* Page interior details */
+    .mock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+      margin-bottom: 22px;
+    }
+
+    .mock-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1.25;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .mock-title span {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .mock-subtitle {
+      font-size: 11px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.45);
+      margin-bottom: 24px;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: 0.5px;
+    }
+
+    .mock-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .mock-photo-frame {
+      height: 120px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(201, 168, 76, 0.08), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mock-photo-frame::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 22px; height: 22px;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+    }
+
+    .mock-text-col {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .mock-text-line {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 100px;
+    }
+
+    .mock-text-line.main {
+      height: 7px;
+      background: var(--gold);
+      opacity: 0.85;
+      width: 70%;
+    }
+
+    .mock-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 26px;
+      padding-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.3);
+      font-family: monospace;
+      letter-spacing: 0.5px;
+    }
+
+    /* Left Bottom Content */
+    .left-content {
+      position: relative; 
+      z-index: 2;
+      margin-top: 40px;
+    }
+
+    .left-eyebrow {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .left-eyebrow::before {
+      content: '';
+      width: 20px;
+      height: 1.5px;
+      background: var(--gold);
+    }
+
+    .left-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 400;
+      line-height: 1.15;
+      color: #ffffff;
+      margin-bottom: 16px;
+    }
+
+    .left-title em {
+      font-style: italic;
+      color: var(--gold);
+      font-weight: 300;
+    }
+
+    .left-desc {
+      font-size: 14.5px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.7;
+      font-weight: 300;
+      max-width: 420px;
+    }
+
+    /* ── RIGHT FORM PANEL — APPLE STYLE ── */
+    .right-panel { 
+      background: var(--paper); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 3rem;
+      box-sizing: border-box;
+    }
+
+    .form-box { 
+      width: 100%; 
+      max-width: 400px; 
+    }
+
+    .form-heading { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 2.4rem; 
+      font-weight: 400; 
+      color: var(--ink); 
+      margin-bottom: .6rem; 
+    }
+
+    .form-sub { 
+      font-size: 14px; 
+      color: var(--ink-muted); 
+      margin-bottom: 2.2rem; 
+      font-weight: 300;
+    }
+
+    .form-sub a { 
+      color: var(--gold); 
+      text-decoration: none; 
+      font-weight: 600; 
+    }
+
+    .form-sub a:hover {
+      text-decoration: underline;
+    }
+
+    .flash-inline { 
+      padding: .85rem 1.1rem; 
+      border-radius: 10px; 
+      font-size: 13.5px; 
+      margin-bottom: 1.5rem; 
+      display: flex; 
+      align-items: center; 
+      gap: .6rem; 
+      font-weight: 500;
+    }
+
+    .flash-inline.error   { background:#FEF2F2; color:#B91C1C; border:1px solid #FCA5A5; }
+    .flash-inline.success { background:#F0FDF4; color:#15803D; border:1px solid #86EFAC; }
+
+    .form-group { 
+      margin-bottom: 1.3rem; 
+    }
+
+    .form-label { 
+      display: block; 
+      font-size: 11px; 
+      font-weight: 700; 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+      color: var(--ink-soft); 
+      margin-bottom: .6rem; 
+    }
+
+    .form-input { 
+      width: 100%; 
+      padding: .85rem 1.1rem; 
+      background: var(--white); 
+      border: 1px solid var(--border); 
+      border-radius: 10px; 
+      font-family: var(--font-body); 
+      font-size: 14px; 
+      color: var(--ink); 
+      outline: none; 
+      transition: all .3s ease; 
+      box-sizing: border-box;
+    }
+
+    .form-input:focus { 
+      border-color: var(--gold); 
+      box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15); 
+    }
+    
+    .password-wrapper { position: relative; }
+    
+    .toggle-password {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--ink-muted);
+      cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;
+      transition: color .2s; z-index: 10;
+    }
+
+    .toggle-password:hover { color: var(--gold); }
+    .form-input[name="password"] { padding-right: 42px; }
+    .form-hint { font-size: 11px; color: var(--ink-muted); margin-top: .4rem; font-weight: 300; }
+
+    .btn-submit { 
+      width: 100%; 
+      padding: 1rem; 
+      background: var(--ink); 
+      color: var(--white); 
+      border: none; 
+      border-radius: 10px; 
+      font-family: 'Outfit', sans-serif; 
+      font-size: 13px; 
+      font-weight: 700; 
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer; 
+      transition: all .3s cubic-bezier(0.16, 1, 0.3, 1); 
+      margin-top: .8rem; 
+      position: relative; 
+      overflow: hidden; 
+      display: block; 
+      text-align: center; 
+      text-decoration: none; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-submit::after { 
+      content: ''; 
+      position: absolute; 
+      inset: 0; 
+      background: linear-gradient(135deg, var(--gold), #A8882A); 
+      opacity: 0; 
+      transition: opacity .4s ease; 
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(201, 168, 76, 0.25);
+    }
+
+    .btn-submit:hover::after { 
+      opacity: 1; 
+    }
+
+    .btn-submit span { 
+      position: relative; 
+      z-index: 1; 
+    }
+
+    .form-footer { 
+      margin-top: 2rem; 
+      text-align: center; 
+      font-size: 13px; 
+    }
+
+    .form-footer a { 
+      color: var(--ink-muted); 
+      text-decoration: none; 
+      font-weight: 500; 
+      transition: color .2s;
+    }
+
+    .form-footer a:hover {
+      color: var(--gold);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <!-- Left premium panel with high-fidelity mockup -->
+    <div class="left-panel">
+        <div class="magazine-mockup-wrapper">
+            <div class="magazine-page-glass">
+                <div class="mock-header">
+                    <span>Ấn Bản Số 01</span>
+                    <span>AI Editorial</span>
+                </div>
+                <h2 class="mock-title">Khám Phá Triết Lý<br><span>Bauhaus</span></h2>
+                <div class="mock-subtitle">Dàn trang tự động bởi AI Magazine</div>
+                
+                <div class="mock-layout">
+                    <div class="mock-photo-frame"></div>
+                    <div class="mock-text-col">
+                        <div class="mock-text-line main"></div>
+                        <div class="mock-text-line" style="width: 90%;"></div>
+                        <div class="mock-text-line" style="width: 80%;"></div>
+                        <div class="mock-text-line" style="width: 85%;"></div>
+                        <div class="mock-text-line" style="width: 60%;"></div>
+                    </div>
+                </div>
+                
+                <div class="mock-footer">
+                    <span>CHƯƠNG I • MỸ THUẬT</span>
+                    <span>TRANG 04</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="left-content">
+            <div class="left-eyebrow">Trải nghiệm biên tập cao cấp</div>
+            <h1 class="left-title">Tự Do. Nhanh Chóng.<br><em>Đẳng Cấp.</em></h1>
+            <p class="left-desc">
+                Đăng ký một lần để mở khóa không gian sáng tạo tạp chí số không giới hạn với sức mạnh trí tuệ nhân tạo.
+            </p>
+        </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="right-panel">
+        <div class="form-box">
+            <h1 class="form-heading">Đăng Ký</h1>
+            <p class="form-sub">Đã có tài khoản? <a href="/login">Đăng nhập ngay</a></p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cat, msg in messages %}
+                <div class="flash-inline {{ cat }}">
+                    {% if cat == 'success' %}✓{% else %}✕{% endif %} {{ msg }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">Họ và tên</label>
+                    <input class="form-input" type="text" name="name" placeholder="Ví dụ: Nguyễn Văn A" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ Email</label>
+                    <input class="form-input" type="email" name="email" placeholder="name@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu</label>
+                    <div class="password-wrapper">
+                        <input class="form-input" type="password" name="password" id="password" placeholder="Tối thiểu 6 ký tự" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="form-hint">Mật khẩu của bạn phải có độ dài tối thiểu 6 ký tự</p>
+                </div>
+                <button class="btn-submit" type="submit">
+                    <span>Khởi tạo tài khoản →</span>
+                </button>
+            </form>
+
+            <div class="form-footer">
+                <a href="/">← Quay lại Trang chủ</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

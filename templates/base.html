@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Magazine{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Design Tokens (Light Mode Default - Kinfolk/Cereal Premium Paper Editorial style) */
+            --gold: #B89635; --gold-light: #D4B04C; --gold-dark: #8E7020;
+            --ink: #12141A; --ink-soft: #3E424E; --ink-muted: #757987;
+            --paper: #F9F8F6; --paper-2: #F1EFEB; --white: #FFFFFF;
+            
+            /* Semantic Aliases */
+            --bg: var(--paper);
+            --surface: var(--white);
+            --surface-2: var(--paper-2);
+            --border: rgba(18, 20, 26, 0.08);
+            --text-1: var(--ink);
+            --text-2: var(--ink-soft);
+            --text-3: var(--ink-muted);
+            
+            --font-display: 'Playfair Display', serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --font-nav: 'Outfit', sans-serif;
+            
+            /* Navbar specifically for Light Mode */
+            --nav-bg: rgba(249, 248, 246, 0.85);
+            --nav-border: rgba(18, 20, 26, 0.05);
+            --nav-text: var(--ink-soft);
+            --nav-text-hover: var(--ink);
+            
+            --nav-height: 64px;
+            --radius-lg: 16px; --radius-md: 12px; --radius-sm: 8px;
+            --shadow-sm: 0 4px 12px rgba(18, 20, 26, .03);
+            --shadow-md: 0 12px 35px rgba(18, 20, 26, .06);
+            --shadow-lg: 0 24px 64px rgba(18, 20, 26, .09);
+            --max-w: 1280px;
+            --gutter: clamp(16px, 4vw, 40px);
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+            /* Glassmorphism support */
+            --glass-bg: rgba(255, 255, 255, 0.55);
+            --glass-border: rgba(18, 20, 26, 0.07);
+            --input-bg: rgba(255, 255, 255, 0.7);
+            --input-border: rgba(18, 20, 26, 0.12);
+        }
+
+        [data-theme="dark"] {
+            /* Design Tokens (Dark Mode - Apple Glassmorphism/Dark Room Gallery style) */
+            --paper: #080B11; --paper-2: #11141C; --white: #12151D;
+            --ink: #FFFFFF; --ink-soft: #D1D5DB; --ink-muted: #9CA3AF;
+            --gold: #C9A84C; --gold-light: #E2C06A; --gold-dark: #A8882A;
+            
+            /* Semantic Aliases */
+            --bg: var(--paper);
+            --surface: var(--white);
+            --surface-2: var(--paper-2);
+            --border: rgba(255,255,255,0.08);
+            --text-1: var(--ink);
+            --text-2: var(--ink-soft);
+            --text-3: var(--ink-muted);
+
+            /* Navbar for Dark Mode */
+            --nav-bg: rgba(8, 11, 17, 0.75);
+            --nav-border: rgba(255, 255, 255, 0.05);
+            --nav-text: rgba(255, 255, 255, 0.7);
+            --nav-text-hover: #fff;
+
+            --shadow-sm: 0 4px 10px rgba(0, 0, 0, .4);
+            --shadow-md: 0 10px 30px rgba(0, 0, 0, .5);
+            --shadow-lg: 0 25px 60px rgba(0, 0, 0, .6);
+
+            /* Glassmorphism support */
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --input-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: var(--font-body); 
+            background: var(--paper); 
+            color: var(--ink); 
+            min-height: 100vh; 
+            line-height: 1.6; 
+            transition: background 0.3s ease, color 0.3s ease;
+            {% if not is_embedded %}
+            padding-top: var(--nav-height);
+            {% endif %}
+            overflow-x: hidden;
+        }
+
+        /* ── EMBEDDED MODE ── */
+        body.is-embedded { padding-top: 0 !important; }
+        body.is-embedded nav, 
+        body.is-embedded footer, 
+        body.is-embedded .mobile-nav-toggle,
+        body.is-embedded .back-link { display: none !important; }
+        
+        /* ── PREMIUM NAVBAR ── */
+        nav {
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%;
+            z-index: 2000;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--nav-border);
+            border-top: 2px solid var(--gold);
+            transition: all 0.3s var(--ease-out);
+        }
+
+        .nav-inner {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            flex-wrap: nowrap !important;
+            height: 100%;
+        }
+
+        .nav-brand {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--nav-text-hover);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0; /* Prevents logo from being squashed */
+            white-space: nowrap;
+        }
+
+        .nav-brand span { color: var(--gold); white-space: nowrap; }
+
+        .nav-links { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; flex-shrink: 0; }
+
+        .nav-links a, .nav-links button.theme-btn {
+            color: var(--nav-text);
+            text-decoration: none;
+            font-family: var(--font-nav);
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s var(--ease-out);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 14px;
+            border-radius: 100px;
+            white-space: nowrap;
+            height: 36px;
+            border: 1px solid transparent;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links button.theme-btn:hover { 
+            color: var(--nav-text-hover); 
+            background: var(--nav-border); 
+        }
+        
+        .nav-links a.active { 
+            color: var(--gold); 
+            background: rgba(201, 168, 76, 0.1); 
+            border-color: rgba(201, 168, 76, 0.2);
+        }
+
+        .nav-btn-primary {
+            background: var(--gold) !important;
+            color: #18160F !important;
+            font-weight: 700 !important;
+        }
+        .nav-btn-primary:hover {
+            background: var(--gold-light) !important;
+            transform: translateY(-1px);
+        }
+
+        .nav-user-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-left: 16px;
+            margin-left: 8px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-balance {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(201, 168, 76, 0.12);
+            border-radius: 100px;
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .nav-user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--nav-text-hover);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .nav-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid var(--gold);
+        }
+
+        .logout-btn {
+            padding: 0 10px !important;
+            color: #F87070 !important;
+            font-size: 16px !important;
+        }
+        .logout-btn:hover { background: rgba(248, 112, 112, 0.1) !important; }
+
+        /* ── FLASH MESSAGES ── */
+        .flash-container {
+            position: fixed; top: calc(var(--nav-height) + 15px); right: 24px; z-index: 2100;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+            max-width: 350px;
+        }
+        .flash-message {
+            padding: 12px 20px; border-radius: 12px; background: var(--white);
+            box-shadow: var(--shadow-md); color: var(--ink);
+            font-size: 14px; font-weight: 600; display: flex; align-items: center;
+            justify-content: space-between; gap: 15px; pointer-events: auto;
+            animation: slideIn 0.4s var(--ease-out) forwards;
+            border-left: 4px solid var(--gold);
+            backdrop-filter: blur(10px);
+        }
+        .flash-message.error { border-left-color: #F87070; }
+        .flash-message.success { border-left-color: #4ADE80; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ── MOBILE NAV REFRACTOR ── */
+        .nav-mobile-toggle {
+            display: none;
+            background: none; border: none;
+            color: var(--nav-text-hover);
+            font-size: 22px; cursor: pointer;
+            width: 40px; height: 40px;
+            align-items: center; justify-content: center;
+        }
+
+        .nav-mobile-drawer {
+            position: fixed; top: 0; right: -100%; width: 280px; height: 100vh;
+            background: var(--surface); z-index: 3000;
+            padding: 80px 24px 24px;
+            box-shadow: var(--shadow-lg);
+            transition: right 0.4s var(--ease-out);
+            display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .nav-mobile-drawer.active { right: 0; }
+
+        .drawer-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 2999; opacity: 0; pointer-events: none;
+            transition: opacity 0.4s; backdrop-filter: blur(4px);
+        }
+
+        .drawer-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .drawer-close {
+            position: absolute; top: 20px; right: 20px;
+            font-size: 24px; color: var(--text-3); cursor: pointer;
+        }
+
+        .nav-mobile-drawer a {
+            padding: 14px 20px; border-radius: var(--radius-md);
+            color: var(--text-1); text-decoration: none;
+            font-weight: 600; font-size: 15px;
+            display: flex; align-items: center; gap: 12px;
+            background: var(--surface-2);
+        }
+
+        .nav-mobile-drawer a.active { background: rgba(201,168,76,0.1); color: var(--gold); }
+
+        /* ── MOBILE OPTIMIZATION ── */
+        .flag-icon {
+            width: 18px;
+            height: auto;
+            border-radius: 2px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 1100px) {
+            .nav-links a:not(.nav-btn-primary):not(.nav-btn-secondary),
+            .nav-user-section { display: none !important; }
+            .nav-mobile-toggle { display: flex; }
+            .nav-links { gap: 4px; flex-wrap: nowrap; }
+        }
+
+        @media (max-width: 768px) {
+            :root { --nav-height: 56px; }
+            nav { padding: 0 8px !important; background: var(--nav-bg) !important; }
+            .nav-inner { 
+                display: flex !important; 
+                justify-content: space-between !important; 
+                align-items: center !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            .nav-brand { font-size: 17px !important; flex-shrink: 1; min-width: 0; }
+            .nav-brand span { display: inline; }
+            .nav-links .theme-btn span { display: none; }
+            .nav-links .theme-btn { width: 32px !important; height: 32px !important; padding: 0 !important; font-size: 15px !important; }
+            .nav-mobile-toggle { width: 32px !important; height: 32px !important; font-size: 17px !important; display: flex !important; }
+            .nav-links { gap: 6px !important; flex-shrink: 0; margin-left: 10px; }
+            .nav-btn-primary, .nav-btn-secondary { 
+                font-size: 10px !important; 
+                padding: 0 8px !important; 
+                height: 30px !important;
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .nav-brand { font-size: 16px !important; }
+            .nav-links { gap: 6px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .flash-container { right: 12px; left: 12px; max-width: none; }
+          .flash-message { padding: 12px 16px; font-size: 13px; }
+          .close-flash { right: 10px; top: 12px; font-size: 14px; }
+        }
+
+        /* ── PREMIUM SWEETALERT2 STYLING ── */
+        .swal-premium-popup {
+            background: var(--surface) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 16px !important;
+            box-shadow: var(--shadow-lg) !important;
+            color: var(--text-1) !important;
+            font-family: var(--font-body) !important;
+            padding: 30px !important;
+        }
+        .swal-premium-title {
+            color: var(--text-1) !important;
+            font-family: var(--font-display) !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            margin-bottom: 12px !important;
+        }
+        .swal-premium-text {
+            color: var(--text-2) !important;
+            font-size: 14px !important;
+            line-height: 1.6 !important;
+            margin-bottom: 24px !important;
+        }
+        .swal-premium-confirm-btn {
+            background: linear-gradient(135deg, var(--gold), #A8882A) !important;
+            color: #18160F !important;
+            font-family: var(--font-nav) !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            padding: 10px 24px !important;
+            border-radius: 8px !important;
+            border: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 15px rgba(201, 168, 76, 0.2) !important;
+            transition: all 0.3s ease !important;
+            outline: none !important;
+            margin: 0 4px !important;
+        }
+        .swal-premium-confirm-btn:hover {
+            background: linear-gradient(135deg, var(--gold-light), var(--gold)) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 20px rgba(201, 168, 76, 0.3) !important;
+        }
+        .swal-premium-cancel-btn {
+            background: var(--surface-2) !important;
+            color: var(--text-2) !important;
+            font-family: var(--font-nav) !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            padding: 10px 24px !important;
+            border-radius: 8px !important;
+            border: 1px solid var(--border) !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            outline: none !important;
+            margin: 0 4px !important;
+        }
+        .swal-premium-cancel-btn:hover {
+            background: var(--border) !important;
+            color: var(--text-1) !important;
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    {% if not is_embedded %}
+    <nav>
+        <div class="nav-inner">
+            <a href="/" class="nav-brand">AI <span>Magazine</span></a>
+            <div class="nav-links">
+                <!-- Theme & Lang -->
+                <button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle Theme">
+                    <i class="fas fa-moon" id="themeIcon"></i> <span id="themeLabel">Dark</span>
+                </button>
+                <button type="button" class="theme-btn" id="langToggle" onclick="toggleLanguage()">
+                    <img src="https://flagcdn.com/w20/us.png" id="langFlag" class="flag-icon" alt="Lang">
+                    <span id="langToggleText">EN</span>
+                </button>
+
+                {% if current_user.is_authenticated %}
+                <button type="button" class="nav-mobile-toggle" onclick="toggleDrawer(true)">
+                    <i class="fas fa-bars"></i>
+                </button>
+                {% endif %}
+
+                {% if not current_user.is_authenticated %}
+                    <a href="/login" class="nav-btn-secondary">Login</a>
+                    <a href="/register" class="nav-btn-primary">Register</a>
+                {% else %}
+                    <!-- Desktop App Links -->
+                    <a href="/editor" class="nav-link-create {{ 'active' if active_page == 'home' }}"><i class="fas fa-magic"></i> <span>Create Magazine</span></a>
+                    <a href="/billing" class="{{ 'active' if active_page == 'billing' }}"><i class="fas fa-wallet"></i> <span>Billing</span></a>
+                    <a href="/profile" class="{{ 'active' if active_page == 'profile' }}"><i class="fas fa-user-circle"></i> <span>Profile</span></a>
+                    <a href="/history" class="{{ 'active' if active_page == 'history' }}"><i class="fas fa-history"></i> <span>History</span></a>
+                    
+                    <div class="nav-user-section">
+                        <div class="nav-balance">
+                            <i class="fas fa-wallet" style="font-size: 11px;"></i>
+                            <span class="currency-convert" data-balance="{{ current_user.balance or 0 }}">
+                                {{ "{:,.0f}".format(current_user.balance or 0).replace(",", ".") }} VND
+                            </span>
+                        </div>
+                        <div class="nav-user-info">
+                            {% if current_user.picture %}
+                            <img src="{{ current_user.picture }}" class="nav-avatar" alt="Avatar">
+                            {% else %}
+                            <div class="nav-avatar" style="display:flex; align-items:center; justify-content:center; background: rgba(201,168,76,0.1);">
+                                <i class="fas fa-user" style="color: var(--gold); font-size: 14px;"></i>
+                            </div>
+                            {% endif %}
+                            <span>{{ current_user.name }}</span>
+                        </div>
+                        <a href="/logout" class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Mobile Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
+    <div class="nav-mobile-drawer" id="mobileDrawer">
+        <i class="fas fa-times drawer-close" onclick="toggleDrawer(false)"></i>
+        {% if current_user.is_authenticated %}
+            <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                <div style="font-weight: 800; color: var(--gold); font-size: 11px; text-transform: uppercase; margin-bottom: 8px;">Account Balance</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--text-1);" class="currency-convert" data-balance="{{ current_user.balance or 0 }}">
+                    {{ "{:,.0f}".format(current_user.balance or 0).replace(",", ".") }} VND
+                </div>
+            </div>
+            <a href="/editor" class="{{ 'active' if active_page == 'home' }}"><i class="fas fa-magic"></i> Create Magazine</a>
+            <a href="/billing" class="{{ 'active' if active_page == 'billing' }}"><i class="fas fa-wallet"></i> Billing</a>
+            <a href="/profile" class="{{ 'active' if active_page == 'profile' }}"><i class="fas fa-user-circle"></i> My Profile</a>
+            <a href="/history" class="{{ 'active' if active_page == 'history' }}"><i class="fas fa-history"></i> History</a>
+            
+            <!-- Mobile Theme & Lang Buttons -->
+            <div style="display: flex; gap: 8px; margin: 15px 0; padding-top: 15px; border-top: 1px solid var(--border);">
+                <button type="button" onclick="toggleTheme()" style="flex: 1; height: 38px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-1); font-size: 13px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                    <i class="fas fa-moon"></i> <span data-i18n="Dark">Dark</span>
+                </button>
+                <button type="button" onclick="toggleLanguage()" style="flex: 1; height: 38px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-1); font-size: 13px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                    <img src="https://flagcdn.com/w20/us.png" class="flag-icon lang-flag-mobile" alt="Lang" style="width: 18px; height: auto;">
+                    <span class="lang-text-mobile">EN</span>
+                </button>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
+                <a href="/logout" style="background: rgba(255, 77, 79, 0.05); color: #ff4d4f; border: 1px solid rgba(255, 77, 79, 0.1);"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        {% else %}
+            <a href="/login"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <a href="/register" style="background: var(--gold); color: #18160F;"><i class="fas fa-user-plus"></i> Register</a>
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+
+            <!-- Mobile Theme & Lang Buttons -->
+            <div style="display: flex; gap: 8px; margin: 15px 0; padding-top: 15px; border-top: 1px solid var(--border);">
+                <button type="button" onclick="toggleTheme()" style="flex: 1; height: 38px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-1); font-size: 13px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                    <i class="fas fa-moon"></i> <span data-i18n="Dark">Dark</span>
+                </button>
+                <button type="button" onclick="toggleLanguage()" style="flex: 1; height: 38px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-1); font-size: 13px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                    <img src="https://flagcdn.com/w20/us.png" class="flag-icon lang-flag-mobile" alt="Lang" style="width: 18px; height: auto;">
+                    <span class="lang-text-mobile">EN</span>
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <span data-i18n="{{ message }}">{{ message }}</span>
+                        <i class="fas fa-times close-flash" onclick="this.parentElement.remove()"></i>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <script>
+        // Check for embedded mode
+        if (window.location.search.includes('embed=1')) {
+            document.body.classList.add('is-embedded');
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeUI(theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Re-apply translations to reflect current language on theme label
+            if (typeof applyTranslations === 'function') {
+                applyTranslations(localStorage.getItem('lang') || 'en');
+            }
+
+            // Propagate theme to parent if embedded
+            try {
+                if (window.parent && window.parent !== window && typeof window.parent.applyTheme === 'function') {
+                    window.parent.applyTheme(newTheme);
+                }
+            } catch (e) {
+                console.error("Could not propagate theme to parent:", e);
+            }
+
+            // Propagate theme to all child iframes
+            document.querySelectorAll('iframe').forEach(iframe => {
+                try {
+                    if (iframe.contentWindow) {
+                        if (typeof iframe.contentWindow.applyTheme === 'function') {
+                            iframe.contentWindow.applyTheme(newTheme);
+                        } else {
+                            iframe.contentWindow.document.documentElement.setAttribute('data-theme', newTheme);
+                            if (typeof iframe.contentWindow.updateThemeUI === 'function') {
+                                iframe.contentWindow.updateThemeUI(newTheme);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Could not propagate theme to iframe:", e);
+                }
+            });
+        }
+
+        function updateThemeUI(theme) {
+            const icon = document.getElementById('themeIcon');
+            const label = document.getElementById('themeLabel');
+
+            if (icon && label) {
+                if (theme === 'dark') {
+                    icon.className = 'fas fa-sun';
+                    label.innerText = 'Light';
+                } else {
+                    icon.className = 'fas fa-moon';
+                    label.innerText = 'Dark';
+                }
+            }
+        }
+
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('mobileDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+            if (open) {
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Initialize theme on load
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeUI(savedTheme);
+        })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Custom SweetAlert2 theme to match our premium gold/dark design
+        const SwalPremium = Swal.mixin({
+            customClass: {
+                popup: 'swal-premium-popup',
+                title: 'swal-premium-title',
+                htmlContainer: 'swal-premium-text',
+                confirmButton: 'swal-premium-confirm-btn',
+                cancelButton: 'swal-premium-cancel-btn'
+            },
+            buttonsStyling: false
+        });
+
+        // Override mặc định window.alert bằng SweetAlert2 tuyệt đẹp
+        const originalAlert = window.alert;
+        window.alert = function(message) {
+            SwalPremium.fire({
+                title: typeof t === 'function' ? t('Notification') : 'Thông báo',
+                html: message.replace(/\n/g, '<br>'), // Hỗ trợ xuống dòng
+                icon: 'info',
+                confirmButtonText: typeof t === 'function' ? t('OK') : 'Đồng ý'
+            });
+        };
+    </script>
+    <script src="{{ url_for('static', filename='js/lang.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

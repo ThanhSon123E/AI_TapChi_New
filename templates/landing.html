@@ -1,0 +1,1353 @@
+{% extends "base.html" %}
+
+{% block title %}AI Magazine - Nền Tảng Thiết Kế Tạp Chí AI Thời Thượng{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --landing-accent: #C9A84C;
+        --landing-accent-light: #E2C06A;
+        --landing-accent-dark: #A8882A;
+    }
+
+    /* ── RESET & SMOOTHING ── */
+    .landing-container {
+        background: var(--bg);
+        color: var(--text-2);
+        overflow-x: hidden;
+        transition: all 0.3s ease;
+        font-family: var(--font-body);
+        position: relative;
+    }
+
+    /* ── AMBIENT GLOW ORBS (BACKGROUND EFFECTS) ── */
+    .ambient-orb-1 {
+        position: absolute;
+        top: 5%;
+        right: -10%;
+        width: 50vw;
+        height: 50vw;
+        background: radial-gradient(circle, rgba(201, 168, 76, 0.06) 0%, rgba(201, 168, 76, 0) 70%);
+        pointer-events: none;
+        z-index: 1;
+        animation: orbFloat 20s infinite alternate ease-in-out;
+    }
+
+    .ambient-orb-2 {
+        position: absolute;
+        top: 45%;
+        left: -15%;
+        width: 45vw;
+        height: 45vw;
+        background: radial-gradient(circle, rgba(226, 192, 106, 0.05) 0%, rgba(226, 192, 106, 0) 70%);
+        pointer-events: none;
+        z-index: 1;
+        animation: orbFloat 25s infinite alternate-reverse ease-in-out;
+    }
+
+    .ambient-orb-3 {
+        position: absolute;
+        bottom: 5%;
+        right: -10%;
+        width: 40vw;
+        height: 40vw;
+        background: radial-gradient(circle, rgba(201, 168, 76, 0.04) 0%, rgba(201, 168, 76, 0) 70%);
+        pointer-events: none;
+        z-index: 1;
+        animation: orbFloat 18s infinite alternate ease-in-out;
+    }
+
+    @keyframes orbFloat {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(5%, 8%) scale(1.1); }
+        100% { transform: translate(-3%, -5%) scale(0.95); }
+    }
+
+    /* ── HERO SECTION ── */
+    .hero {
+        position: relative;
+        min-height: 95vh;
+        display: flex;
+        align-items: center;
+        padding: 100px var(--gutter);
+        margin-bottom: 80px;
+        overflow: hidden;
+    }
+
+    .hero-inner {
+        width: 100%;
+        max-width: var(--max-w);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 60px;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-content {
+        max-width: 680px;
+    }
+
+    /* Shimmer tag */
+    .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(201, 168, 76, 0.08);
+        border: 1px solid rgba(201, 168, 76, 0.25);
+        color: var(--landing-accent-light);
+        border-radius: 100px;
+        font-size: 11.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 15px rgba(201, 168, 76, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-tag::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: skewX(-25deg);
+        animation: shineSweep 4s infinite ease-in-out;
+    }
+
+    @keyframes shineSweep {
+        0% { left: -100%; }
+        25% { left: 150%; }
+        100% { left: 150%; }
+    }
+
+    .hero-content h1 {
+        font-family: var(--font-display);
+        font-size: clamp(40px, 6vw, 76px);
+        font-weight: 900;
+        line-height: 1.08;
+        margin-bottom: 24px;
+        color: var(--text-1);
+        letter-spacing: -1px;
+    }
+
+    /* Shining Gradient Text */
+    .hero-content h1 span {
+        font-style: italic;
+        font-weight: 400;
+        background: linear-gradient(to right, #FFEAA7, var(--landing-accent-light), var(--landing-accent), #FFEAA7);
+        background-size: 300% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: textGradientRun 8s linear infinite;
+    }
+
+    @keyframes textGradientRun {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .hero-content p {
+        font-size: clamp(16px, 2vw, 18px);
+        line-height: 1.7;
+        color: var(--text-3);
+        margin-bottom: 40px;
+        max-width: 560px;
+    }
+
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    /* Primary CTA with Shine & Scale Effect */
+    .btn-premium-cta {
+        background: linear-gradient(135deg, var(--landing-accent), #A8882A);
+        color: #18160F !important;
+        padding: 16px 36px;
+        border-radius: 30px;
+        font-weight: 800;
+        text-decoration: none;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        box-shadow: 0 4px 20px rgba(201, 168, 76, 0.25);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-premium-cta::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+        transform: skewX(-20deg);
+        transition: 0.75s;
+    }
+
+    .btn-premium-cta:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 30px rgba(201, 168, 76, 0.45);
+        background: linear-gradient(135deg, var(--landing-accent-light), var(--landing-accent));
+    }
+
+    .btn-premium-cta:hover::after {
+        left: 150%;
+        transition: 0.75s ease-in-out;
+    }
+
+    .btn-premium-secondary {
+        border: 1px solid var(--border);
+        background: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        color: var(--text-1);
+        padding: 16px 36px;
+        border-radius: 30px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-premium-secondary:hover {
+        background: var(--surface-2);
+        border-color: var(--text-1);
+        transform: translateY(-2px);
+    }
+
+    /* Hero Book Showcase with Parallax and Float */
+    .hero-showcase {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        perspective: 1000px;
+    }
+
+    .book-wrapper {
+        perspective: 1000px;
+        width: 320px;
+        height: 420px;
+        position: relative;
+        animation: bookFloatAuto 6s infinite alternate ease-in-out;
+    }
+
+    @keyframes bookFloatAuto {
+        0% { transform: translateY(0) rotate(-1deg); }
+        100% { transform: translateY(-12px) rotate(1deg); }
+    }
+
+    .book-card {
+        width: 100%;
+        height: 100%;
+        background: #111;
+        border-radius: 4px 16px 16px 4px;
+        box-shadow: 15px 15px 40px rgba(0,0,0,0.4);
+        transform: rotateY(-15deg) rotateX(10deg);
+        transform-style: preserve-3d;
+        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .book-wrapper:hover .book-card {
+        transform: rotateY(-5deg) rotateX(5deg) scale(1.05);
+        box-shadow: 25px 25px 55px rgba(0,0,0,0.55);
+    }
+
+    .book-cover {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 30px;
+        color: #fff;
+    }
+
+    .book-cover::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.85));
+        z-index: 1;
+    }
+
+    .book-spine {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 12px;
+        background: linear-gradient(to right, rgba(0,0,0,0.5), rgba(255,255,255,0.15) 40%, rgba(0,0,0,0.3));
+        z-index: 3;
+        border-radius: 4px 0 0 4px;
+    }
+
+    .book-meta {
+        position: relative;
+        z-index: 2;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto 60px;
+        padding: 0 20px;
+    }
+
+    .section-label {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        color: var(--landing-accent);
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        font-family: var(--font-display);
+        font-size: clamp(28px, 4vw, 42px);
+        font-weight: 900;
+        line-height: 1.2;
+        color: var(--text-1);
+        margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+        font-size: 15px;
+        color: var(--text-3);
+        line-height: 1.6;
+    }
+
+    /* ── STATS SECTION ── */
+    .stats-bar {
+        background: var(--surface-2);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 50px var(--gutter);
+        margin-bottom: 100px;
+        position: relative;
+    }
+
+    .stats-inner {
+        max-width: var(--max-w);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+        text-align: center;
+    }
+
+    .stat-item h3 {
+        font-family: var(--font-display);
+        font-size: clamp(32px, 5vw, 48px);
+        font-weight: 700;
+        color: var(--landing-accent);
+        line-height: 1;
+        margin-bottom: 8px;
+        transition: transform 0.3s;
+    }
+
+    .stat-item:hover h3 {
+        transform: scale(1.1) translateY(-2px);
+        color: var(--landing-accent-light);
+    }
+
+    .stat-item p {
+        font-size: 13px;
+        color: var(--text-3);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* ── STYLES SECTION ── */
+    .showcase {
+        max-width: var(--max-w);
+        margin: 0 auto 120px;
+        padding: 0 var(--gutter);
+        position: relative;
+        z-index: 2;
+    }
+
+    .style-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .style-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        text-align: left;
+        position: relative;
+    }
+
+    .style-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 45px rgba(201, 168, 76, 0.08);
+        border-color: var(--landing-accent);
+    }
+
+    .style-image-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 3/4;
+        overflow: hidden;
+    }
+
+    .style-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .style-item:hover .style-image-container img {
+        transform: scale(1.08);
+    }
+
+    .style-tag {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        z-index: 2;
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: background 0.3s;
+    }
+
+    .style-item:hover .style-tag {
+        background: var(--landing-accent);
+        color: #18160F;
+    }
+
+    .style-info {
+        padding: 24px;
+    }
+
+    .style-info h3 {
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text-1);
+    }
+
+    .style-info p {
+        font-size: 14px;
+        color: var(--text-3);
+        line-height: 1.6;
+    }
+
+    /* ── BENTO FEATURES GRID ── */
+    .bento-section {
+        max-width: var(--max-w);
+        margin: 0 auto 120px;
+        padding: 0 var(--gutter);
+        position: relative;
+        z-index: 2;
+    }
+
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto auto;
+        gap: 24px;
+    }
+
+    .bento-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Subtle Border Glow Effect on Hover */
+    .bento-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        border: 2px solid transparent;
+        transition: 0.4s;
+        pointer-events: none;
+    }
+
+    .bento-card:hover {
+        border-color: transparent;
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(201, 168, 76, 0.06);
+    }
+
+    .bento-card:hover::after {
+        border-color: rgba(201, 168, 76, 0.3);
+    }
+
+    .bento-card-large {
+        grid-column: span 2;
+    }
+
+    .bento-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(201, 168, 76, 0.08);
+        border-radius: 12px;
+        color: var(--landing-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .bento-card:hover .bento-icon {
+        background: var(--landing-accent);
+        color: #18160F;
+        transform: rotate(10deg) scale(1.1);
+    }
+
+    .bento-card h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-1);
+        margin-bottom: 12px;
+    }
+
+    .bento-card p {
+        font-size: 14px;
+        color: var(--text-3);
+        line-height: 1.6;
+    }
+
+    /* ── PRICING SECTION ── */
+    .pricing-section {
+        background: var(--surface-2);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 100px var(--gutter);
+        margin-bottom: 100px;
+        position: relative;
+    }
+
+    .pricing-inner {
+        max-width: var(--max-w);
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Pay-as-you-go card (Giá lẻ) with Glow and Shimmer border */
+    .single-pricing-box {
+        max-width: 600px;
+        margin: 0 auto 60px;
+        background: var(--surface);
+        border: 2px solid var(--landing-accent);
+        border-radius: 24px;
+        padding: 35px 40px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(201, 168, 76, 0.05);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .single-pricing-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 50px rgba(201, 168, 76, 0.12);
+        border-color: var(--landing-accent-light);
+    }
+
+    .single-pricing-box::before {
+        content: 'BẮT ĐẦU NGAY';
+        position: absolute;
+        top: 18px;
+        right: -35px;
+        background: var(--landing-accent);
+        color: #18160F;
+        font-size: 9px;
+        font-weight: 850;
+        padding: 4px 35px;
+        transform: rotate(45deg);
+        letter-spacing: 0.12em;
+        transition: background 0.3s;
+    }
+
+    .single-pricing-box:hover::before {
+        background: var(--landing-accent-light);
+    }
+
+    .single-price {
+        font-family: var(--font-display);
+        font-size: 44px;
+        font-weight: 900;
+        color: var(--landing-accent);
+        margin: 15px 0;
+        text-shadow: 0 2px 10px rgba(201, 168, 76, 0.1);
+        transition: all 0.3s;
+    }
+
+    .single-pricing-box:hover .single-price {
+        color: var(--landing-accent-light);
+        transform: scale(1.03);
+    }
+
+    /* Packages Grid */
+    .packages-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 30px;
+        margin-top: 50px;
+    }
+
+    .package-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 40px 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 430px;
+    }
+
+    .package-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--border);
+        transition: all 0.3s;
+    }
+
+    /* Bronze, Silver, Gold, Diamond color highlights */
+    .package-card.bronze::before { background: #CD7F32; }
+    .package-card.silver::before { background: #C0C0C0; }
+    .package-card.gold::before { background: linear-gradient(90deg, #D4AF37, #FFDF00); }
+    .package-card.diamond::before { background: linear-gradient(90deg, #B9F2FF, #89E5FF); }
+
+    .package-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 45px rgba(0,0,0,0.06);
+    }
+
+    .package-card.gold {
+        border: 2px solid var(--landing-accent);
+        box-shadow: 0 10px 30px rgba(201, 168, 76, 0.06);
+    }
+
+    .package-card.gold:hover {
+        border-color: var(--landing-accent-light);
+        box-shadow: 0 20px 45px rgba(201, 168, 76, 0.15);
+    }
+
+    .package-badge {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(201, 168, 76, 0.12);
+        border: 1px solid rgba(201, 168, 76, 0.2);
+        color: var(--landing-accent);
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 9px;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        animation: pulseBadge 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseBadge {
+        0% { opacity: 0.8; transform: translateX(-50%) scale(0.98); }
+        50% { opacity: 1; transform: translateX(-50%) scale(1.02); }
+        100% { opacity: 0.8; transform: translateX(-50%) scale(0.98); }
+    }
+
+    .package-title {
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-1);
+        margin-top: 10px;
+        margin-bottom: 12px;
+    }
+
+    .package-amount {
+        font-size: 30px;
+        font-weight: 900;
+        color: var(--text-1);
+        margin-bottom: 20px;
+        transition: transform 0.3s;
+    }
+
+    .package-card:hover .package-amount {
+        transform: scale(1.05);
+    }
+
+    .package-card.gold .package-amount {
+        color: var(--landing-accent);
+    }
+
+    .package-card.gold:hover .package-amount {
+        color: var(--landing-accent-light);
+    }
+
+    .package-desc {
+        font-size: 13.5px;
+        color: var(--text-3);
+        line-height: 1.6;
+        margin-bottom: 30px;
+        flex-grow: 1;
+    }
+
+    .btn-package-buy {
+        width: 100%;
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-weight: 800;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        background: var(--surface-2);
+        color: var(--text-1);
+        border: 1px solid var(--border);
+    }
+
+    .package-card:hover .btn-package-buy {
+        background: var(--text-1);
+        color: var(--bg);
+        border-color: var(--text-1);
+        transform: translateY(-1px);
+    }
+
+    .package-card.gold .btn-package-buy {
+        background: var(--landing-accent);
+        color: #18160F;
+        border-color: var(--landing-accent);
+        box-shadow: 0 4px 15px rgba(201, 168, 76, 0.2);
+    }
+
+    .package-card.gold:hover .btn-package-buy {
+        background: linear-gradient(135deg, var(--landing-accent-light), var(--landing-accent-dark));
+        color: #18160F;
+        box-shadow: 0 6px 20px rgba(201, 168, 76, 0.3);
+    }
+
+    /* ── FAQ SECTION ── */
+    .faq-section {
+        max-width: 800px;
+        margin: 0 auto 120px;
+        padding: 0 20px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .faq-item {
+        border-bottom: 1px solid var(--border);
+        padding: 24px 0;
+        transition: all 0.3s;
+    }
+
+    .faq-item:hover {
+        padding-left: 8px;
+        border-color: var(--landing-accent);
+    }
+
+    .faq-question {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .faq-answer {
+        font-size: 14.5px;
+        color: var(--text-3);
+        line-height: 1.7;
+        margin-top: 12px;
+        display: none;
+        animation: fadeIn 0.4s var(--ease-out);
+    }
+
+    .faq-icon-toggle {
+        font-size: 14px;
+        color: var(--landing-accent);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .faq-item.active .faq-answer {
+        display: block;
+    }
+
+    .faq-item.active .faq-icon-toggle {
+        transform: rotate(45deg);
+        color: var(--landing-accent-light);
+    }
+
+    /* ── CALL TO ACTION BANNER ── */
+    .cta-banner {
+        max-width: var(--max-w);
+        margin: 0 auto 80px;
+        padding: 0 var(--gutter);
+        position: relative;
+        z-index: 2;
+    }
+
+    .cta-banner-inner {
+        background: linear-gradient(135deg, var(--paper-2), var(--surface));
+        border: 1px solid var(--border);
+        border-radius: 30px;
+        padding: 80px 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.4s;
+    }
+
+    .cta-banner-inner:hover {
+        border-color: rgba(201, 168, 76, 0.3);
+    }
+
+    .cta-banner-inner::before {
+        content: '';
+        position: absolute;
+        bottom: -50px;
+        left: -50px;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, rgba(201, 168, 76, 0) 70%);
+        pointer-events: none;
+    }
+
+    .cta-banner h2 {
+        font-family: var(--font-display);
+        font-size: clamp(32px, 5vw, 48px);
+        font-weight: 900;
+        color: var(--text-1);
+        margin-bottom: 20px;
+    }
+
+    .cta-banner p {
+        font-size: 16px;
+        color: var(--text-3);
+        margin-bottom: 40px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* ── DYNAMIC SCROLL REVEAL CLASS ── */
+    .reveal {
+        opacity: 0;
+        transform: translateY(40px) scale(0.98);
+        transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 992px) {
+        .hero-inner {
+            grid-template-columns: 1fr;
+            text-align: center;
+            gap: 50px;
+        }
+
+        .hero-content {
+            max-width: 100%;
+        }
+
+        .hero-tag {
+            justify-content: center;
+        }
+
+        .hero-content p {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            justify-content: center;
+        }
+
+        .stats-inner {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+        }
+
+        .style-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .bento-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .bento-card-large {
+            grid-column: span 1;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-inner {
+            grid-template-columns: 1fr;
+        }
+        
+        .hero {
+            padding-top: 40px;
+        }
+
+        .btn-premium-cta, .btn-premium-secondary {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="landing-container">
+    <!-- Ambient Globs -->
+    <div class="ambient-orb-1"></div>
+    <div class="ambient-orb-2"></div>
+    <div class="ambient-orb-3"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-content">
+                <span class="hero-tag"><i class="fas fa-sparkles"></i> AI-Powered Editorial</span>
+                <h1>Thời đại mới của <br><span>Thiết kế Tạp chí</span></h1>
+                <p>Biến các tài liệu Word thô ráp của bạn thành các ấn phẩm tạp chí số thời thượng, đẳng cấp cao. Bố cục tự động bằng AI, phong cách thẩm mỹ museum-grade độc bản.</p>
+                <div class="hero-actions">
+                    <a href="/editor" class="btn-premium-cta"><i class="fas fa-magic"></i> Bắt đầu Ngay</a>
+                    <a href="#showcase" class="btn-premium-secondary"><i class="fas fa-eye"></i> Xem Phong Cách</a>
+                </div>
+            </div>
+            <div class="hero-showcase">
+                <div class="book-wrapper" id="heroBook">
+                    <div class="book-card">
+                        <div class="book-spine"></div>
+                        <div class="book-cover" style="background-image: url('https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=600');">
+                            <div class="book-meta">
+                                <span style="font-size: 10px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase;">SPECIAL ISSUE</span>
+                            </div>
+                            <div class="book-meta">
+                                <h2 style="font-family: var(--font-display); font-size: 32px; font-weight: 900; line-height: 1.1; margin-bottom: 5px;">VOGUE</h2>
+                                <p style="font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--landing-accent);">AI Generated Magazine</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar reveal">
+        <div class="stats-inner">
+            <div class="stat-item">
+                <h3>30 Giây</h3>
+                <p>Thời Gian Tạo</p>
+            </div>
+            <div class="stat-item">
+                <h3>6 Phong Cách</h3>
+                <p>Mỹ Thuật Đỉnh Cao</p>
+            </div>
+            <div class="stat-item">
+                <h3>100%</h3>
+                <p>Dàn Trang Tự Động</p>
+            </div>
+            <div class="stat-item">
+                <h3>15K+</h3>
+                <p>Tạp Chí Đã Xuất Bản</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showcase Section -->
+    <section class="showcase" id="showcase">
+        <div class="section-header reveal">
+            <span class="section-label">Editorial Styles</span>
+            <h2 class="section-title">6 Phong Cách Thiết Kế Impeccable</h2>
+            <p class="section-subtitle">Được tinh tuyển từ tinh hoa mỹ thuật thế giới để đảm bảo mỗi trang tạp chí đều là một tác phẩm nghệ thuật sang trọng.</p>
+        </div>
+        
+        <!-- Row 1: Vogue, Minimal, Business -->
+        <div class="style-grid reveal">
+            <div class="style-item">
+                <div class="style-image-container">
+                    <span class="style-tag">Fashion & Beauty</span>
+                    <img src="https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&q=80&w=600" alt="Vogue">
+                </div>
+                <div class="style-info">
+                    <h3>VOGUE</h3>
+                    <p>Đỉnh cao sang trọng thời trang. Typography mạnh mẽ kết hợp hình ảnh tràn viền lộng lẫy và tông nền tối vàng huyền bí.</p>
+                </div>
+            </div>
+            <div class="style-item">
+                <div class="style-image-container">
+                    <span class="style-tag">Minimalism</span>
+                    <img src="https://images.unsplash.com/photo-1512485800893-b08ec1ea59b1?auto=format&fit=crop&q=80&w=600" alt="Minimal">
+                </div>
+                <div class="style-info">
+                    <h3>MINIMAL</h3>
+                    <p>Trường phái tối giản Thụy Sĩ. Đường nét tinh tế, khoảng trắng thư thái, tone màu sáng dịu và thanh lịch.</p>
+                </div>
+            </div>
+            <div class="style-item">
+                <div class="style-image-container">
+                    <span class="style-tag">Business & Slate</span>
+                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=600" alt="Business">
+                </div>
+                <div class="style-info">
+                    <h3>BUSINESS</h3>
+                    <p>Chuyên nghiệp và hiện đại. Gam màu xanh navy/slate sang trọng, tối ưu bố cục 2-3 cột thích hợp cho tri thức kinh doanh.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Science, Art, News -->
+        <div class="style-grid reveal">
+            <div class="style-item">
+                <div class="style-image-container">
+                    <span class="style-tag">Science & Edu</span>
+                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=600" alt="Science">
+                </div>
+                <div class="style-info">
+                    <h3>SCIENCE</h3>
+                    <p>Thiết kế tri thức khoa học hiện đại. Chú trọng trình bày bố cục mạch lạc, dữ liệu trực quan sinh động.</p>
+                </div>
+            </div>
+            <div class="style-item">
+                <div class="style-image-container">
+                    <span class="style-tag">Art & Creative</span>
+                    <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=600" alt="Art">
+                </div>
+                <div class="style-info">
+                    <h3>ART</h3>
+                    <p>Sáng tạo bay bổng đầy cá tính nghệ thuật. Tone màu tím hoàng gia độc đáo cùng cách ngắt nhịp văn bản đầy thi sĩ.</p>
+                </div>
+            </div>
+            <div class="style-item">
+                <div class="style-image-container">
+                    <span class="style-tag">Journalism (News)</span>
+                    <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600" alt="News">
+                </div>
+                <div class="style-info">
+                    <h3>NEWS</h3>
+                    <p>Phong cách tòa soạn báo chí cổ điển. Sử dụng gam màu đỏ burgundy đặc trưng cùng hiệu ứng **Drop Caps (Chữ cái lớn đầu dòng)** cực kỳ thu hút.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bento Features Section -->
+    <section class="bento-section">
+        <div class="section-header reveal">
+            <span class="section-label">AI Engine</span>
+            <h2 class="section-title">Đột Phá Với Công Nghệ Dàn Trang Tự Động</h2>
+            <p class="section-subtitle">Sự kết hợp hoàn hảo giữa Trí tuệ nhân tạo (LLM Art Director) và các thuật toán thiết kế mỹ thuật cao cấp.</p>
+        </div>
+        <div class="bento-grid reveal">
+            <!-- Card 1: Dàn trang AI -->
+            <div class="bento-card bento-card-large">
+                <div>
+                    <div class="bento-icon"><i class="fas fa-brain"></i></div>
+                    <h3>Giám đốc Nghệ thuật AI (Art Director Engine)</h3>
+                    <p>Hệ thống tự động sử dụng AI để phân loại ngữ nghĩa văn bản của bạn thành tiêu đề, chương hồi, đoạn mở đầu lôi cuốn, trích dẫn đắt giá hay chú thích. AI sẽ tự chọn layout 2 hoặc 3 cột tối ưu cho độ dài văn bản và tự động sắp xếp các hình ảnh khớp chính xác với nội dung liên quan.</p>
+                </div>
+                <div style="margin-top: 20px; font-weight: 700; font-size: 13px; color: var(--landing-accent);">Không cần thao tác kéo thả thủ công rườm rà!</div>
+            </div>
+            <!-- Card 2: Lật trang 3D -->
+            <div class="bento-card">
+                <div>
+                    <div class="bento-icon"><i class="fas fa-book-open"></i></div>
+                    <h3>Lật Trang 3D Chân Thực (Realistic Flipbook)</h3>
+                    <p>Trải nghiệm đọc tạp chí trực tuyến tuyệt hảo. Tương tác lật trang 3D mượt mà, mô phỏng đổ bóng và âm thanh giấy lật chân thực trên mọi màn hình di động hay máy tính.</p>
+                </div>
+            </div>
+            <!-- Card 3: ISSN & Barcode -->
+            <div class="bento-card">
+                <div>
+                    <div class="bento-icon"><i class="fas fa-barcode"></i></div>
+                    <h3>ISSN & Barcode Thương Mại Tự Động</h3>
+                    <p>Mỗi số tạp chí tạo ra sẽ được hệ thống cấp mã vạch Barcode 13 số độc bản ở bìa sau và mã số chuẩn quốc tế ISSN tại Mục lục như một ấn phẩm chuyên nghiệp xuất bản toàn cầu.</p>
+                </div>
+            </div>
+            <!-- Card 4: WYSIWYG Cover Designer -->
+            <div class="bento-card bento-card-large">
+                <div>
+                    <div class="bento-icon"><i class="fas fa-palette"></i></div>
+                    <h3>Trình Thiết Kế Bìa WYSIWYG Trực Tiếp</h3>
+                    <p>Biên tập bìa trước và bìa sau tạp chí trực quan thông qua canvas tương tác ngay trên trình duyệt. Tùy chỉnh văn bản, vị trí, font chữ nghệ thuật và màu sắc dễ dàng, hệ thống sẽ tự động đồng bộ xuất file PDF sắc nét chuẩn in ấn CMYK/RGB.</p>
+                </div>
+                <div style="margin-top: 20px; font-weight: 700; font-size: 13px; color: var(--landing-accent);">Biên tập bìa trực quan cực dễ dàng!</div>
+            </div>
+            <!-- Card 5: Professional TOC -->
+            <div class="bento-card">
+                <div>
+                    <div class="bento-icon"><i class="fas fa-list-ol"></i></div>
+                    <h3>Trang Mục Lục Tòa Soạn 2 Cột</h3>
+                    <p>Tự động tổng hợp Hội đồng chỉ đạo, Ban biên tập, giấy phép và giá bán ở cột trái. Cột phải liệt kê danh sách bài viết được trích xuất Tác giả & Chủ đề tự động bằng AI cực kỳ chuyên nghiệp.</p>
+                </div>
+            </div>
+            <!-- Card 6: Multi-language & Upload Direct -->
+            <div class="bento-card">
+                <div>
+                    <div class="bento-icon"><i class="fas fa-file-upload"></i></div>
+                    <h3>Tải lên PDF Xem Flipbook & Đa Ngôn Ngữ</h3>
+                    <p>Hỗ trợ đầy đủ tiếng Anh và tiếng Việt. Ngoài việc tạo bằng AI, bạn có thể tải lên trực tiếp tệp PDF sẵn có để chuyển đổi thành định dạng 3D Flipbook chỉ trong 1 giây.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section" id="pricing">
+        <div class="pricing-inner">
+            <div class="section-header reveal">
+                <span class="section-label">Pricing Plans</span>
+                <h2 class="section-title">Biểu Phí Rõ Ràng & Linh Hoạt</h2>
+                <p class="section-subtitle">Lựa chọn hình thức tạo tạp chí linh động theo nhu cầu thực tế của bạn hoặc nạp gói ưu đãi để tối ưu hóa chi phí.</p>
+            </div>
+            <!-- Giá tạo lẻ -->
+            <div class="single-pricing-box reveal">
+                <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3);">Mặc Định (Pay As You Go)</span>
+                <h3 style="font-size: 20px; font-weight: 700; color: var(--text-1); margin-top: 10px;">Giá lượt tạo lẻ tạp chí</h3>
+                <div class="single-price"><span class="currency-convert" data-balance="{{ pricing_per_magazine|int }}">{{ "{:,.0f}".format(pricing_per_magazine|int).replace(",", ".") }} VND</span> <span style="font-size: 16px; font-weight: 600; color: var(--text-3);">/ lượt tạo</span></div>
+                <p style="font-size: 13.5px; color: var(--text-3); line-height: 1.6; max-width: 480px; margin: 0 auto;">Hệ thống sẽ <strong>tự động trừ thẳng</strong> số dư tài khoản của bạn ngay khi tạo thành công tạp chí cao cấp bằng AI.</p>
+                <a href="/editor" class="btn-premium-cta" style="margin-top: 24px; padding: 12px 30px; font-size: 12px;">Thử nghiệm ngay</a>
+            </div>
+
+            <!-- Các gói nạp ưu đãi -->
+            {% if pricing_packages %}
+            <div class="reveal" style="text-align: center; margin-top: 80px; margin-bottom: 30px;">
+                <h3 style="font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--text-1);">Các Gói Nạp Ưu Đãi Thêm</h3>
+                <p style="font-size: 14.5px; color: var(--text-3); margin-top: 8px;">Nạp tiền nhanh qua chuyển khoản SePay để gia tăng số dư tài khoản kèm ưu đãi tặng thêm lượt tạo tạp chí.</p>
+            </div>
+            
+            <div class="packages-grid reveal">
+                {% for pack in pricing_packages %}
+                    {% set pack_class = "" %}
+                    {% if "Đồng" in pack.name or "Bronze" in pack.name %}
+                        {% set pack_class = "bronze" %}
+                    {% elif "Bạc" in pack.name or "Silver" in pack.name %}
+                        {% set pack_class = "silver" %}
+                    {% elif "Vàng" in pack.name or "Gold" in pack.name %}
+                        {% set pack_class = "gold" %}
+                    {% elif "Kim Cương" in pack.name or "Diamond" in pack.name %}
+                        {% set pack_class = "diamond" %}
+                    {% endif %}
+
+                    <div class="package-card {{ pack_class }}">
+                        {% if pack_class == "gold" %}
+                            <span class="package-badge"><i class="fas fa-fire"></i> Khuyên Dùng</span>
+                        {% endif %}
+                        <div>
+                            <h3 class="package-title">{{ pack.name }}</h3>
+                            <div class="package-amount"><span class="currency-convert" data-balance="{{ pack.amount }}">{{ "{:,.0f}".format(pack.amount).replace(",", ".") }} VND</span></div>
+                            <p class="package-desc">{{ pack.desc }}</p>
+                        </div>
+                        <a href="/billing" class="btn-package-buy">Nạp gói này</a>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="section-header reveal">
+            <span class="section-label">Questions</span>
+            <h2 class="section-title">Câu Hỏi Thường Gặp</h2>
+            <p class="section-subtitle">Giải đáp nhanh các băn khoăn về quy trình nạp tiền, bảo lưu số dư và tính phí trên hệ thống.</p>
+        </div>
+
+        <div class="reveal">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>1. Hệ thống tính phí tạo tạp chí như thế nào?</span>
+                    <i class="fas fa-plus faq-icon-toggle"></i>
+                </div>
+                <div class="faq-answer">
+                    Hệ thống áp dụng biểu phí tự động trừ tiền lẻ là <span class="currency-convert" data-balance="{{ pricing_per_magazine|int }}">{{ "{:,.0f}".format(pricing_per_magazine|int).replace(",", ".") }} VND</span> cho mỗi lượt tạo thành công tạp chí cao cấp. Khi bạn bấm nút "Tạo Tạp Chí" và hệ thống biên tập hoàn thành, số tiền này sẽ được tự động trừ thẳng vào số dư (balance) tài khoản của bạn.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>2. Làm sao để nạp tiền vào tài khoản?</span>
+                    <i class="fas fa-plus faq-icon-toggle"></i>
+                </div>
+                <div class="faq-answer">
+                    Bạn có thể nạp tiền bất cứ lúc nào bằng cách vào mục "Nạp tiền" (Billing) trên thanh menu. Hãy chọn nhanh một gói nạp ưu đãi hoặc nhập số tiền tùy ý (từ <span class="currency-convert" data-balance="10000">10.000 VND</span>), hệ thống sẽ tạo một mã thanh toán duy nhất cùng mã QR ngân hàng. Bạn chỉ cần quét mã QR và chuyển khoản chính xác nội dung, tiền sẽ được tự động cộng vào tài khoản sau 1-5 giây nhờ hệ thống SePay tự động.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>3. Nếu quá trình tạo tạp chí bị lỗi tôi có bị trừ tiền không?</span>
+                    <i class="fas fa-plus faq-icon-toggle"></i>
+                </div>
+                <div class="faq-answer">
+                    Hệ thống chỉ thực hiện trừ tiền khi việc phân tích tài liệu và xuất bản tạp chí PDF diễn ra thành công. Trong trường hợp xảy ra lỗi do hệ thống hoặc lỗi xử lý, số tiền của bạn sẽ được bảo lưu nguyên vẹn và không bị khấu trừ.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>4. Số dư tài khoản của tôi có bị hết hạn không?</span>
+                    <i class="fas fa-plus faq-icon-toggle"></i>
+                </div>
+                <div class="faq-answer">
+                    Hoàn toàn không. Số dư tài khoản sau khi nạp của bạn được bảo lưu vô thời hạn và có thể sử dụng để tạo tạp chí bất cứ khi nào bạn muốn mà không lo bị hết hạn hay mất tiền.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Banner -->
+    <section class="cta-banner reveal">
+        <div class="cta-banner-inner">
+            <h2>Khám phá không gian sáng tạo thời thượng</h2>
+            <p>Trải nghiệm nền tảng tự động dàn trang tạp chí chuyên nghiệp hàng đầu cùng AI. Biến ý tưởng của bạn thành hiện thực đẳng cấp cao ngay hôm nay.</p>
+            <a href="/editor" class="btn-premium-cta" style="padding: 16px 48px; border-radius: 100px;"><i class="fas fa-rocket"></i> Truy cập Workspace</a>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                e.preventDefault();
+                targetElement.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // FAQ Toggle with smooth height animation
+    document.querySelectorAll('.faq-question').forEach(question => {
+        question.addEventListener('click', () => {
+            const item = question.parentElement;
+            const isActive = item.classList.contains('active');
+            
+            // Close all FAQ items
+            document.querySelectorAll('.faq-item').forEach(el => {
+                el.classList.remove('active');
+                const ans = el.querySelector('.faq-answer');
+                if (ans) ans.style.display = 'none';
+            });
+            
+            if (!isActive) {
+                item.classList.add('active');
+                const ans = item.querySelector('.faq-answer');
+                if (ans) {
+                    ans.style.display = 'block';
+                }
+            }
+        });
+    });
+
+    // ── SCROLL REVEAL ENGINE ──
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealOnScroll = () => {
+        const triggerBottom = window.innerHeight * 0.88;
+        revealElements.forEach(el => {
+            const elTop = el.getBoundingClientRect().top;
+            if (elTop < triggerBottom) {
+                el.classList.add('active');
+            }
+        });
+    };
+
+    window.addEventListener('scroll', revealOnScroll);
+    revealOnScroll(); // Chạy ngay lập tức khi load để hiện phần tử đầu tiên
+
+    // ── MOUSE PARALLAX ON HERO BOOK ──
+    const heroBook = document.getElementById('heroBook');
+    if (heroBook) {
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            
+            // Tác động xoay nhẹ lên book wrapper
+            heroBook.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+        
+        // Reset when mouse leaves
+        document.addEventListener('mouseleave', () => {
+            heroBook.style.transform = `rotateY(0deg) rotateX(0deg)`;
+            heroBook.style.transition = 'all 0.5s ease';
+        });
+    }
+</script>
+{% endblock %}

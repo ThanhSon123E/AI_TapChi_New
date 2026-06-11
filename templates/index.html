@@ -1,0 +1,4376 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-2);
+      -webkit-font-smoothing: antialiased;
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: clamp(40px, 10vw, 80px) var(--gutter) 40px;
+    }
+
+    .hero-inner {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(201, 168, 76, 0.1);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 900;
+      color: var(--text-1);
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-3);
+      line-height: 1.7;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ── MAIN WRAPPER ── */
+    .page-wrapper {
+      width: 100%;
+      padding: 0 var(--gutter) 80px;
+    }
+
+    .page-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+    }
+
+    .page-body {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    .left-column {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sidebar {
+      width: 400px;
+      flex: 0 0 400px;
+      position: sticky;
+      top: calc(var(--nav-height) + 20px);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    @media (max-width: 1200px) {
+      .sidebar { width: 350px; flex-basis: 350px; }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 16px;
+      }
+      .page-body {
+        flex-direction: column;
+        padding: 0;
+      }
+      .sidebar {
+        width: 100%;
+        flex: none;
+        position: static;
+        order: 2;
+      }
+      .left-column {
+        order: 1;
+      }
+      .btn-submit {
+        width: 100%;
+        height: 50px;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .page-body {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        flex: none;
+        position: static;
+      }
+    }
+
+    /* ── FLIPBOOK VIEWER ── */
+    .flip-viewer {
+      flex: 1;
+      background: #252319;
+      /* Dark paper feel */
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .flip-header {
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .flip-header h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flip-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #flipbookContainer {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .flip-controls {
+      padding: 12px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn-flip-ctrl {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-flip-ctrl:hover {
+      background: var(--gold);
+      color: #18160F;
+      border-color: var(--gold);
+    }
+
+    .flip-page-info {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-2);
+    }
+
+    .flip-placeholder {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .flip-placeholder i {
+      font-size: 48px;
+      color: var(--gold);
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    /* ── SECTION CARD ── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      margin-bottom: 22px;
+    }
+
+    .step-num {
+      width: 30px;
+      height: 30px;
+      background: var(--gold);
+      color: #18160F;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .section-head h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-1);
+      line-height: 1.25;
+      margin-bottom: 3px;
+    }
+
+    .section-head p {
+      color: var(--text-3);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* ── TEMPLATE GRID ── */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .fashion-grid {
+      grid-template-columns: 1fr;
+      max-width: 160px;
+    }
+
+    .journalism-fashion-grid {
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 510px;
+      width: 100%;
+      gap: 15px;
+    }
+
+    .responsive-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .responsive-grid-2 {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .template-grid {
+        grid-template-columns: 1fr;
+        justify-content: center;
+        margin: 0 auto;
+      }
+      .section-head {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .section {
+        padding: 16px;
+      }
+      .step-num {
+        margin-top: 0;
+        margin-bottom: 8px;
+      }
+    }
+
+    .tpl-card {
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--border);
+      overflow: hidden;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      background: var(--surface-2);
+      position: relative;
+    }
+
+    .tpl-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-2);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tpl-card.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, .18);
+    }
+
+    .tpl-preview {
+      width: 100%;
+      aspect-ratio: 3/4;
+      display: block;
+    }
+
+    .tpl-info {
+      padding: 9px 10px 11px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .tpl-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: .03em;
+      line-height: 1.2;
+    }
+
+    .tpl-desc {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    .tpl-check {
+      display: none;
+      position: absolute;
+      bottom: 44px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      background: var(--gold);
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+    }
+
+    .tpl-check svg {
+      width: 10px;
+      height: 10px;
+    }
+
+    .tpl-card.active .tpl-check {
+      display: flex;
+    }
+
+    /* ── COVER TEMPLATE GRID ── */
+    .cover-template-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .cover-tpl-card {
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--border);
+      overflow: hidden;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      background: var(--surface-2);
+      position: relative;
+    }
+
+    .cover-tpl-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .cover-tpl-card.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, .18);
+    }
+
+    .cover-tpl-card .tpl-check {
+      display: none;
+      position: absolute;
+      bottom: 44px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      background: var(--gold);
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover-tpl-card.active .tpl-check {
+      display: flex;
+    }
+
+    /* ── FORM ── */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+      align-items: end;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 4px;
+      display: block;
+      line-height: 1.3;
+    }
+
+    .form-input,
+    select {
+      height: 40px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      color: var(--text-1);
+      background: var(--surface-2);
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+      width: 100%;
+    }
+
+    .form-input:focus,
+    select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, .14);
+      background: var(--surface);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-3);
+    }
+
+    select option {
+      background: var(--surface);
+      color: var(--text-1);
+    }
+
+    /* ── COVER BUILDER ── */
+    .cover-layout {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    .cover-layout > div:first-child {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cover-preview-wrap {
+      flex: 0 0 540px;
+      width: 540px;
+      position: sticky;
+      top: calc(var(--nav-height) + 20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cover-previews-container {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .cover-previews-container > div {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cover-canvas-container {
+      width: 100%;
+      aspect-ratio: 3/4;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      position: relative;
+      box-shadow: var(--shadow-lg);
+      border: 1.5px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    #coverCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+      object-fit: contain;
+    }
+
+    @media (max-width: 1280px) {
+      .cover-preview-wrap {
+        flex: 0 0 440px;
+        width: 440px;
+      }
+      .cover-previews-container {
+        gap: 12px;
+      }
+    }
+
+    /* Chuyển sang xếp dọc sớm hơn ở 1150px thay vì 1000px để tránh chèn đè */
+    @media (max-width: 1150px) {
+      .cover-layout {
+        flex-direction: column;
+        gap: 24px;
+        align-items: center;
+      }
+      .cover-preview-wrap {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        flex: none;
+        position: static;
+      }
+      .cover-previews-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        gap: 16px;
+      }
+      .cover-previews-container > div {
+        flex: 0 1 280px;
+      }
+    }
+
+    /* Mobile: xếp 2 bìa theo chiều dọc để to rõ, dễ thao tác ngón tay */
+    @media (max-width: 768px) {
+      .cover-previews-container {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 24px !important;
+        max-width: 100% !important;
+      }
+      .cover-previews-container > div {
+        width: 100% !important;
+        max-width: 380px !important;
+        flex: none !important;
+      }
+      /* Form chiếm full width khi cover-layout xếp dọc */
+      .cover-layout > div:first-child {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .cover-previews-container > div {
+        max-width: 100% !important;
+      }
+    }
+
+    .cover-preview-label {
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .cover-drop {
+      border: 2px dashed rgba(201, 168, 76, 0.35);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--surface-2);
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .cover-drop:hover {
+      border-color: var(--gold);
+      background: var(--bg);
+      box-shadow: var(--shadow-md);
+    }
+
+    .cover-drop input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cover-drop-text {
+      font-size: 12.5px;
+      color: var(--text-3);
+      line-height: 1.5;
+    }
+
+    .cover-drop-text strong {
+      display: block;
+      font-size: 13px;
+      color: var(--text-1);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .text-controls {
+      margin-top: 18px;
+      padding: 16px;
+      background: var(--surface-2);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    .text-controls h4 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-1);
+      margin-bottom: 14px;
+    }
+
+    .style-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      background: var(--surface);
+    }
+
+    .style-panel-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .style-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 7px;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .style-btn {
+      flex: 1;
+      height: 28px;
+      padding: 0 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--surface-2);
+      color: var(--text-2);
+      transition: background .15s, border-color .15s;
+    }
+
+    .style-btn:hover {
+      border-color: var(--gold);
+    }
+
+    .style-btn.active {
+      background: var(--gold);
+      color: #18160F;
+      border-color: var(--gold-dark);
+    }
+
+    .style-size-input {
+      box-sizing: border-box;
+      height: 32px !important;
+      width: 55px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      border: 1px solid var(--border) !important;
+      border-radius: 4px !important;
+      background: var(--surface-2);
+      color: var(--text-2);
+      outline: none;
+      padding: 0 !important;
+      flex: none;
+      transition: border-color .15s, background .15s, color .15s;
+    }
+
+    .style-size-input:hover {
+      border-color: var(--gold) !important;
+    }
+
+    .style-size-input:focus {
+      border-color: var(--gold) !important;
+      background: var(--surface) !important;
+      color: var(--text-1) !important;
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, .14) !important;
+    }
+
+    /* Hide up/down spin buttons on number inputs inside style-panel and custom-text-item for symmetry */
+    .style-panel input[type="number"]::-webkit-outer-spin-button,
+    .style-panel input[type="number"]::-webkit-inner-spin-button,
+    .custom-text-item input[type="number"]::-webkit-outer-spin-button,
+    .custom-text-item input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .style-panel input[type="number"],
+    .custom-text-item input[type="number"] {
+      -moz-appearance: textfield;
+      box-sizing: border-box;
+    }
+
+    input[type="color"] {
+      width: 36px;
+      height: 30px;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 1px;
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .slider-group {
+      margin-bottom: 10px;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 11px;
+      color: var(--text-3);
+      font-weight: 500;
+    }
+
+    .slider-label span {
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      appearance: none;
+      background: var(--border);
+      border-radius: 100px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: 2px solid var(--gold-dark);
+      cursor: pointer;
+      transition: transform .15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 14px 0;
+    }
+
+    .custom-text-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .custom-text-header label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+
+    .btn-add-text {
+      background: var(--gold);
+      color: #18160F;
+      border: none;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .btn-add-text:hover {
+      background: var(--gold-light);
+    }
+
+    #customTextsList {
+      max-height: none;
+      overflow: visible;
+    }
+    
+    #styleElementSelect {
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C9A84C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 10px center !important;
+      background-size: 12px !important;
+      padding-right: 28px !important;
+      cursor: pointer !important;
+    }
+
+    .custom-text-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      padding: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+    }
+
+    .custom-text-item input[type="text"] {
+      flex: 2;
+      min-width: 90px;
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 11px;
+      background: var(--surface-2);
+      color: var(--text-1);
+      outline: none;
+    }
+
+    .custom-text-item input[type="text"]:focus {
+      border-color: var(--gold);
+    }
+
+    .custom-text-item select {
+      flex: 1;
+      min-width: 80px;
+      height: 28px;
+      font-size: 10px;
+    }
+
+    .custom-text-item input[type="number"] {
+      width: 48px;
+      height: 28px;
+      padding: 0 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 11px;
+      background: var(--surface-2);
+      color: var(--text-1);
+      outline: none;
+    }
+
+    .btn-remove {
+      background: #E53E3E;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .text-controls-hint {
+      font-size: 11px;
+      color: var(--text-3);
+      text-align: center;
+      margin-top: 10px;
+      font-style: italic;
+    }
+
+    /* ── FILE DROP ── */
+    .file-drop {
+      border: 2px dashed rgba(201, 168, 76, 0.35);
+      border-radius: var(--radius-md);
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--surface-2);
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .file-drop:hover,
+    .file-drop.dragging {
+      border-color: var(--gold);
+      background: var(--bg);
+      box-shadow: var(--shadow-md);
+    }
+
+    .file-drop input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .file-drop-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--surface);
+      border: 1.5px solid rgba(201, 168, 76, 0.25);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+
+    .file-drop-icon svg {
+      width: 22px;
+      height: 22px;
+      color: var(--gold);
+    }
+
+    .file-drop-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 4px;
+    }
+
+    .file-drop-sub {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    /* ── LAYOUT GRID ── */
+    .layout-grid {
+      display: grid;
+      gap: 6px;
+      width: 100%;
+      height: 120px;
+      background: var(--surface-2);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      padding: 4px;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .layout-grid.layout-1 {
+      height: 120px;
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+    }
+
+    .layout-grid.layout-2 {
+      height: 120px;
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+
+    .layout-grid.layout-3 {
+      height: 120px;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+
+    .layout-grid.layout-3 .slot-0 {
+      grid-column: 1 / 2;
+      grid-row: 1 / 3;
+    }
+
+    .layout-grid.layout-3 .slot-1 {
+      grid-column: 2 / 3;
+      grid-row: 1 / 2;
+    }
+
+    .layout-grid.layout-3 .slot-2 {
+      grid-column: 2 / 3;
+      grid-row: 2 / 3;
+    }
+
+    .layout-slot {
+      background: var(--bg);
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      overflow: hidden;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .layout-slot:hover {
+      opacity: 0.8;
+    }
+
+    .layout-slot .slot-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      z-index: 1;
+    }
+
+    .layout-slot .slot-text {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-3);
+      transition: color 0.2s;
+    }
+
+    .layout-slot:hover .slot-text {
+      color: var(--gold);
+    }
+
+    .layout-slot.has-img .slot-text {
+      display: none !important;
+    }
+
+    .slot-icon {
+      font-size: 20px;
+      opacity: 0.6;
+    }
+
+    .slot-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .layout-resizer {
+      position: absolute;
+      z-index: 10;
+      background: rgba(201, 168, 76, 0);
+      transition: background 0.2s;
+    }
+
+    .layout-resizer:hover,
+    .layout-resizer.active {
+      background: rgba(201, 168, 76, 0.8);
+    }
+
+    .file-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--gold);
+      color: var(--text-1);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 100px;
+      margin-top: 10px;
+    }
+
+    .file-badge svg {
+      width: 12px;
+      height: 12px;
+      color: var(--gold);
+    }
+
+    /* ── LAYOUT OPTIONS ── */
+    .layout-options {
+      display: flex;
+      gap: 10px;
+    }
+
+    .layout-opt {
+      flex: 1;
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: all .2s;
+    }
+
+    .layout-opt:hover {
+      border-color: var(--gold-light);
+    }
+
+    .layout-opt.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(201, 168, 76, .2);
+    }
+
+    .lo-box {
+      width: 42px;
+      height: 56px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .layout-opt:hover .lo-box {
+      border-color: var(--gold-light);
+      background: var(--bg);
+    }
+
+    .layout-opt.active .lo-box {
+      border-color: var(--gold);
+      background: rgba(201, 168, 76, 0.05);
+    }
+
+    .lo-half {
+      flex: 1;
+      background: #D1D5DB;
+      border-radius: 3px;
+      transition: background 0.2s;
+    }
+
+    [data-theme="dark"] .lo-half { background: #374151; }
+    .layout-opt.active .lo-half { background: var(--gold); }
+
+    .lo-3 { flex-direction: row; }
+
+    .lo-left {
+      flex: 1;
+      background: #D1D5DB;
+      border-radius: 3px;
+    }
+    [data-theme="dark"] .lo-left { background: #374151; }
+    .layout-opt.active .lo-left { background: var(--gold); }
+
+    .lo-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .lo-top {
+      flex: 1;
+      background: #D1D5DB;
+      border-radius: 3px;
+    }
+    [data-theme="dark"] .lo-top { background: #374151; }
+    .layout-opt.active .lo-top { background: var(--gold); }
+
+    .lo-bot {
+      flex: 1;
+      background: #D1D5DB;
+      border-radius: 3px;
+    }
+    [data-theme="dark"] .lo-bot { background: #374151; }
+    .layout-opt.active .lo-bot { background: var(--gold); }
+
+    .layout-opt span {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-2);
+    }
+
+    /* ── GUIDE BOX ── */
+    .guide-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 18px;
+    }
+
+    .guide-box h4 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 10px;
+    }
+
+    .guide-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 6px;
+      font-size: 12.5px;
+      color: var(--text-2);
+      line-height: 1.5;
+    }
+
+    .guide-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    .dot-green {
+      background: #22C55E;
+    }
+
+    .dot-red {
+      background: #EF4444;
+    }
+
+    /* ── AI BADGE ── */
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: linear-gradient(135deg, #5046B5, #7C3E9E);
+      color: #EDE8FF;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+      letter-spacing: .02em;
+    }
+
+    /* ── PROGRESS ── */
+    .progress-wrap {
+      display: none;
+      margin-top: 24px;
+    }
+
+    /* ── SUBMIT BUTTON ── */
+    .btn-submit {
+      width: 100%;
+      height: 50px;
+      background: var(--text-1);
+      color: var(--text-inv);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      cursor: pointer;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-submit:hover {
+      background: #2A2820;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    [data-theme="dark"] .btn-submit {
+      background: var(--gold);
+      color: #18160F;
+    }
+
+    [data-theme="dark"] .btn-submit:hover {
+      background: var(--gold-light);
+    }
+
+    .btn-submit:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: sticky;
+      top: 72px;
+    }
+
+    .sidebar-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-balance {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      background: rgba(201, 168, 76, 0.06);
+      border-radius: 4px;
+      font-family: var(--font-nav);
+      border: 1px solid rgba(201, 168, 76, 0.1);
+    }
+
+    .balance-icon {
+      color: var(--gold);
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .balance-amount {
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    #langToggle {
+      min-width: 75px !important;
+    }
+
+    #themeBtn {
+      min-width: 90px !important;
+    }
+
+    #logoutBtn {
+      min-width: 115px !important;
+    }
+
+    .nav-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--gold);
+    }
+
+    .sidebar-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-card {
+      background: var(--success-bg);
+      border: 1px solid var(--success-bd);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .result-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--success-fg);
+      margin-bottom: 4px;
+    }
+
+    .result-sub {
+      font-size: 13px;
+      color: var(--success-fg);
+      opacity: .8;
+      margin-bottom: 14px;
+    }
+
+    .btn-download {
+      display: block;
+
+      /* ── SIDEBAR CARDS ── */
+      .sidebar-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .sidebar-card h3 {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-1);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Result Card (Success) */
+      .result-card {
+        background: #0C2218;
+        /* Dark Green */
+        border: 1px solid #1A5038;
+        border-radius: var(--radius-lg);
+        padding: 32px 24px;
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .result-title {
+        color: #5FD99A;
+        font-weight: 800;
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+
+      .result-sub {
+        color: #A3E6BF;
+        font-size: 13px;
+        margin-bottom: 24px;
+        opacity: 0.8;
+      }
+
+      /* Sidebar Upload Box */
+      .file-drop {
+        background: var(--bg);
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .file-drop:hover {
+        border-color: var(--gold);
+        background: var(--surface-2);
+      }
+
+      .file-drop-icon {
+        font-size: 32px;
+        color: var(--gold);
+        margin-bottom: 16px;
+        opacity: 0.6;
+      }
+
+      .file-drop-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-1);
+        margin-bottom: 4px;
+      }
+
+      /* AI Workflow List */
+      .ai-flow-step {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .flow-num {
+        width: 24px;
+        height: 24px;
+        background: var(--gold);
+        color: #000;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 900;
+        flex-shrink: 0;
+      }
+
+      .flow-label {
+        display: block;
+        color: var(--gold);
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .flow-desc {
+        color: var(--text-2);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .tip-item {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        color: var(--text-2);
+        line-height: 1.5;
+      }
+
+      .tip-num {
+        width: 22px;
+        height: 22px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--gold);
+        flex-shrink: 0;
+      }
+
+      /* ── RESULT CARD (SUCCESS) ── */
+      /* ── RESULT CARD (ULTRA-SPECIFIC) ── */
+      div.result-card {
+        background: #0C2218 !important;
+        border: 1.5px solid #1A5038 !important;
+        border-radius: 20px !important;
+        padding: 32px 24px !important;
+        text-align: center !important;
+        margin-bottom: 24px !important;
+        display: block !important;
+      }
+
+      div.result-card .result-title {
+        color: #5FD99A !important;
+        font-weight: 800 !important;
+        font-size: 20px !important;
+        margin-bottom: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+      }
+
+      div.result-card .result-sub {
+        color: #A3E6BF !important;
+        font-size: 14px !important;
+        margin-bottom: 28px !important;
+        opacity: 0.9 !important;
+      }
+
+      a.btn-premium-green {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        background: #5FD99A !important;
+        color: #0C2218 !important;
+        text-decoration: none !important;
+        padding: 16px !important;
+        border-radius: 14px !important;
+        font-weight: 900 !important;
+        font-size: 15px !important;
+        margin-bottom: 12px !important;
+        border: none !important;
+        width: 100% !important;
+      }
+
+      a.btn-premium-gold {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        background: #C9A84C !important;
+        color: #18160F !important;
+        text-decoration: none !important;
+        padding: 16px !important;
+        border-radius: 14px !important;
+        font-weight: 900 !important;
+        font-size: 15px !important;
+        margin-bottom: 12px !important;
+        border: none !important;
+        width: 100% !important;
+      }
+
+      a.btn-premium-outline {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        background: transparent !important;
+        color: #5FD99A !important;
+        text-decoration: none !important;
+        padding: 14px !important;
+        border-radius: 14px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        border: 1px solid #1A5038 !important;
+        width: 100% !important;
+      }
+
+      /* PREMIUM BUTTONS */
+      .btn-download-green {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        background: #5FD99A !important;
+        color: #0C2218 !important;
+        text-decoration: none !important;
+        padding: 16px !important;
+        border-radius: 14px !important;
+        font-weight: 900 !important;
+        font-size: 15px !important;
+        margin-bottom: 12px !important;
+        transition: all 0.2s !important;
+        border: none !important;
+        width: 100% !important;
+      }
+
+      .btn-download-green:hover {
+        background: #73EBB0 !important;
+        transform: scale(1.02) !important;
+      }
+
+      .btn-view-gold {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        background: var(--gold) !important;
+        color: #18160F !important;
+        text-decoration: none !important;
+        padding: 16px !important;
+        border-radius: 14px !important;
+        font-weight: 900 !important;
+        font-size: 15px !important;
+        margin-bottom: 12px !important;
+        transition: all 0.2s !important;
+        border: none !important;
+        width: 100% !important;
+      }
+
+      .btn-view-gold:hover {
+        background: var(--gold-light) !important;
+        transform: scale(1.02) !important;
+      }
+
+      .btn-view-outline-green {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        background: transparent !important;
+        color: #5FD99A !important;
+        text-decoration: none !important;
+        padding: 14px !important;
+        border-radius: 14px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        transition: all 0.2s !important;
+        border: 1px solid #1A5038 !important;
+        width: 100% !important;
+      }
+
+      .btn-view-outline-green:hover {
+        background: rgba(95, 217, 154, 0.1) !important;
+      }
+
+      .btn-submit {
+        width: 100%;
+        height: 54px;
+        background: var(--gold);
+        color: #18160F;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: var(--shadow-md);
+        margin-top: 20px;
+      }
+
+      .btn-submit:hover {
+        background: var(--gold-light);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(201, 168, 76, 0.4);
+      }
+
+      .btn-submit:active {
+        transform: translateY(0);
+      }
+
+      margin-bottom: 12px;
+      font-size: 12.5px;
+      color: var(--text-2);
+      line-height: 1.45;
+    }
+
+    .flow-num {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, #5046B5, #7C3E9E);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .flow-label {
+      font-weight: 700;
+      color: var(--gold);
+      display: block;
+      font-size: 11.5px;
+      margin-bottom: 1px;
+    }
+
+    .responsive-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    code {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 11px;
+      color: var(--gold);
+      font-family: monospace;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 768px) {
+      /* Removed nav overrides to match base.html side-by-side layout */
+    }
+
+    @media (max-width: 480px) {
+      .section {
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .page-wrapper {
+        padding: 0 12px 60px;
+      }
+
+      .hero {
+        padding: 24px 12px 16px;
+      }
+
+      .hero h1 {
+        font-size: 24px;
+      }
+
+      .template-grid,
+      .cover-template-grid,
+      .journalism-fashion-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+      }
+
+      .btn-submit {
+        height: 50px;
+        font-size: 15px;
+      }
+
+      .form-input,
+      select {
+        height: 44px;
+        font-size: 15px;
+      }
+
+      .cover-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+      }
+
+      .responsive-grid-2 {
+        grid-template-columns: 1fr !important;
+      }
+
+      .sidebar-card {
+        padding: 16px;
+      }
+
+      .custom-text-item input[type="text"],
+      .custom-text-item select {
+        min-width: 0;
+        flex: 1;
+      }
+    }
+
+    /* Premium Custom Controls */
+    .color-palette { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0; align-items: center; }
+    .color-dot { 
+        width: 24px; height: 24px; border-radius: 50%; 
+        border: 2px solid rgba(255,255,255,0.1); cursor: pointer; 
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        position: relative; box-shadow: var(--shadow-sm);
+    }
+    .color-dot:hover { transform: scale(1.15); box-shadow: var(--shadow-md); }
+    .color-dot.active { 
+        border-color: var(--gold); 
+        box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.25); 
+        transform: scale(1.1); 
+    }
+
+    .custom-dropdown { position: relative; width: 100%; }
+    .dropdown-trigger { 
+        height: 38px; background: var(--surface-2); border: 1px solid var(--border); 
+        border-radius: 8px; padding: 0 12px; display: flex; align-items: center; 
+        justify-content: space-between; font-size: 13px; cursor: pointer; color: var(--text-1);
+        transition: all 0.2s;
+    }
+    .dropdown-trigger:hover { border-color: var(--gold); background: var(--surface); }
+    
+    .dropdown-menu { 
+        position: absolute; 
+        top: calc(100% + 5px);
+        left: 0;
+        width: 100%;
+        min-width: 100%;
+        background: var(--surface) !important; backdrop-filter: blur(15px);
+        border: 1.5px solid var(--border); border-radius: 10px; 
+        display: none; z-index: 999999; box-shadow: var(--shadow-lg) !important;
+        max-height: 180px; overflow-y: auto;
+        animation: dropdownFade 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Scrollbar for dropdown */
+    .dropdown-menu::-webkit-scrollbar { width: 4px; }
+    .dropdown-menu::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+    
+    /* Open upward if needed */
+    .custom-dropdown.drop-up .dropdown-menu {
+        top: auto; bottom: calc(100% + 5px);
+        animation: dropdownFadeUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes dropdownFade {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes dropdownFadeUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-menu.active { display: block; }
+    .dropdown-item { 
+        padding: 12px 16px; font-size: 13px; cursor: pointer; 
+        color: var(--text-2); border-bottom: 1px solid var(--border);
+        transition: all 0.2s; display: flex; align-items: center; justify-content: space-between;
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { background: var(--gold); color: #18160F !important; }
+    .dropdown-item.active { color: var(--gold) !important; font-weight: 700; }
+
+    .custom-text-item {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    /* ── DESIGNER TABS ── */
+    .designer-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+      gap: 4px;
+      position: relative;
+      z-index: 1;
+    }
+    .designer-tab-btn {
+      flex: 1;
+      min-width: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      font-family: var(--font-nav);
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .designer-tab-btn:hover {
+      color: var(--text-1);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .designer-tab-btn.active {
+      color: #18160F !important;
+      background: var(--gold) !important;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(201, 168, 76, 0.25);
+    }
+    [data-theme="dark"] .designer-tab-btn.active {
+      color: #18160F !important;
+      background: var(--gold) !important;
+    }
+
+    @media (max-width: 600px) {
+      .designer-tabs {
+        gap: 2px;
+        padding: 3px;
+        border-radius: 10px;
+        margin-bottom: 14px;
+      }
+      .designer-tab-btn {
+        font-size: 11px;
+        padding: 9px 8px;
+        border-radius: 7px;
+        min-width: 0;
+      }
+    }
+
+    /* Tab contents animation */
+    .designer-tab-content {
+      display: none;
+      animation: fadeInTab 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .designer-tab-content.active {
+      display: block;
+    }
+    @keyframes fadeInTab {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Dropdown select for typography editing */
+    .style-selector-wrap {
+      background: var(--input-bg) !important;
+      border: 1px solid var(--input-border) !important;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .style-panel {
+      display: none !important; /* Hide by default in our tabbed redesign */
+      animation: fadeInTab 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .style-panel.active {
+      display: block !important;
+    }
+
+    /* ── PREMIUM ADAPTIVE GLASSMORPHISM OVERRIDES ── */
+    body {
+      background: var(--bg) !important;
+      color: var(--text-2) !important;
+      position: relative;
+    }
+
+    /* Ambient Orbs */
+    [data-theme="dark"] body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: -10%;
+      width: 50%; height: 50%;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.07) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="dark"] body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -10%;
+      width: 60%; height: 60%;
+      background: radial-gradient(circle, rgba(124, 62, 158, 0.06) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="light"] body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: -10%;
+      width: 55%; height: 55%;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="light"] body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -10%;
+      width: 65%; height: 65%;
+      background: radial-gradient(circle, rgba(226, 192, 106, 0.04) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Hero section */
+    .hero h1 {
+      font-family: 'Playfair Display', serif !important;
+      color: var(--text-1) !important;
+      font-weight: 400 !important;
+    }
+
+    .hero p {
+      color: var(--text-3) !important;
+      font-weight: 300 !important;
+    }
+
+    .hero-tag {
+      background: rgba(201, 168, 76, 0.08) !important;
+      border: 1px solid rgba(201, 168, 76, 0.25) !important;
+      color: var(--gold) !important;
+      font-family: 'Outfit', sans-serif !important;
+      font-weight: 700 !important;
+    }
+
+    /* Frosted Glass Panels */
+    .section, .sidebar-card, .text-controls, .guide-box, .custom-text-item {
+      background: var(--glass-bg) !important;
+      backdrop-filter: blur(35px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: 16px !important;
+      box-shadow: var(--shadow-md) !important;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      color: var(--text-2) !important;
+    }
+
+    .section:hover, .sidebar-card:hover {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 35px rgba(201, 168, 76, 0.05), var(--shadow-lg) !important;
+      transform: translateY(-3px);
+    }
+
+    .section-head h2 {
+      font-family: 'Playfair Display', serif !important;
+      color: var(--text-1) !important;
+      font-weight: 400 !important;
+      font-size: 20px !important;
+    }
+
+    .section-head p {
+      color: var(--text-3) !important;
+      font-size: 13px !important;
+    }
+
+    .step-num {
+      background: linear-gradient(135deg, var(--gold), #A8882A) !important;
+      color: #080B11 !important;
+      font-weight: 900 !important;
+      box-shadow: 0 0 15px rgba(201, 168, 76, 0.35) !important;
+    }
+
+    /* Inputs, Select, Dropdowns */
+    /* Inputs, Select, Dropdowns (Excluding textareas from fixed 42px height) */
+    .form-input:not(textarea), select, .dropdown-trigger, input[type="number"] {
+      background: var(--input-bg) !important;
+      border: 1px solid var(--input-border) !important;
+      border-radius: 10px !important;
+      color: var(--text-1) !important;
+      font-family: 'Outfit', sans-serif !important;
+      transition: all 0.3s ease !important;
+      height: 42px !important;
+    }
+
+    textarea.form-input {
+      background: var(--input-bg) !important;
+      border: 1px solid var(--input-border) !important;
+      border-radius: 10px !important;
+      color: var(--text-1) !important;
+      font-family: 'Outfit', sans-serif !important;
+      transition: all 0.3s ease !important;
+      padding: 12px 14px !important;
+    }
+
+    .form-input:focus, select:focus, .dropdown-trigger:hover, input[type="number"]:focus {
+      border-color: var(--gold) !important;
+      background: var(--surface) !important;
+      box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15) !important;
+    }
+
+    .form-group label {
+      color: var(--text-3) !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.5px !important;
+      font-size: 11px !important;
+    }
+
+    .form-input::placeholder {
+      color: var(--text-3) !important;
+      opacity: 0.7;
+    }
+
+    select option {
+      background: var(--surface) !important;
+      color: var(--text-1) !important;
+    }
+
+    /* Selection Cards (Templates) */
+    .tpl-card, .cover-tpl-card {
+      background: var(--glass-bg) !important;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: 12px !important;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .tpl-card:hover, .cover-tpl-card:hover {
+      border-color: var(--gold) !important;
+      transform: translateY(-4px);
+    }
+
+    .tpl-card.active, .cover-tpl-card.active {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 25px rgba(201, 168, 76, 0.2) !important;
+    }
+
+    .tpl-info {
+      background: var(--nav-bg) !important;
+      border-top: 1px solid var(--border) !important;
+    }
+
+    .tpl-name {
+      font-family: 'Playfair Display', serif !important;
+      color: var(--text-1) !important;
+      font-weight: 700 !important;
+    }
+
+    .tpl-desc {
+      color: var(--text-3) !important;
+    }
+
+    /* File Drop zones */
+    .file-drop, .cover-drop {
+      background: var(--input-bg) !important;
+      border: 1px dashed var(--input-border) !important;
+      border-radius: 12px !important;
+      transition: all 0.3s ease !important;
+    }
+
+    .file-drop:hover, .file-drop.dragging, .cover-drop:hover {
+      border-color: var(--gold) !important;
+      background: rgba(201, 168, 76, 0.04) !important;
+      box-shadow: 0 0 25px rgba(201, 168, 76, 0.05) !important;
+    }
+
+    .file-drop-icon {
+      background: var(--surface-2) !important;
+      border-color: var(--border) !important;
+    }
+
+    .file-drop-title, .cover-drop-text strong {
+      color: var(--text-1) !important;
+    }
+
+    .file-drop-sub, .cover-drop-text {
+      color: var(--text-3) !important;
+    }
+
+    /* Layout Grids */
+    .layout-grid {
+      background: var(--input-bg) !important;
+      border-color: var(--input-border) !important;
+    }
+
+    .layout-slot {
+      background: var(--surface) !important;
+    }
+
+    .slot-text {
+      color: var(--text-3) !important;
+    }
+
+    /* Style panel buttons inside Step 2 */
+    .style-panel {
+      background: var(--surface-2) !important;
+      border-color: var(--border) !important;
+    }
+
+    .style-btn {
+      background: var(--surface) !important;
+      border-color: var(--border) !important;
+      color: var(--text-2) !important;
+    }
+
+    .style-btn.active {
+      background: var(--gold) !important;
+      color: #080B11 !important;
+      border-color: var(--gold) !important;
+    }
+
+    /* PDF Viewer / Right panel */
+    .flip-viewer {
+      background: var(--glass-bg) !important;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: 16px !important;
+      box-shadow: var(--shadow-lg) !important;
+    }
+
+    .flip-header, .flip-controls {
+      background: var(--nav-bg) !important;
+      border-color: var(--border) !important;
+    }
+
+    .flip-header h3 {
+      color: var(--text-1) !important;
+    }
+
+    .btn-flip-ctrl {
+      background: var(--surface-2) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text-2) !important;
+    }
+
+    .btn-flip-ctrl:hover {
+      background: var(--gold) !important;
+      color: #080B11 !important;
+    }
+
+    /* Global Buttons (Create/Upload) */
+    .btn-submit {
+      background: linear-gradient(135deg, var(--gold), #A8882A) !important;
+      color: #080B11 !important;
+      border-radius: 12px !important;
+      font-family: 'Outfit', sans-serif !important;
+      font-weight: 800 !important;
+      letter-spacing: 1.5px !important;
+      text-transform: uppercase !important;
+      box-shadow: 0 5px 20px rgba(201, 168, 76, 0.25) !important;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .btn-submit:hover {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold)) !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 10px 30px rgba(201, 168, 76, 0.4) !important;
+    }
+
+    .btn-add-text {
+      background: rgba(201, 168, 76, 0.15) !important;
+      color: var(--gold) !important;
+      border: 1px solid rgba(201, 168, 76, 0.2) !important;
+      border-radius: 8px !important;
+      font-family: 'Outfit', sans-serif !important;
+      font-weight: 700 !important;
+      transition: all 0.3s ease !important;
+    }
+
+    .btn-add-text:hover {
+      background: var(--gold) !important;
+      color: #080B11 !important;
+    }
+
+    /* Layout custom dropdowns */
+    .dropdown-menu {
+      background: var(--surface) !important;
+      backdrop-filter: blur(25px) !important;
+      -webkit-backdrop-filter: blur(25px) !important;
+      border: 1px solid var(--border) !important;
+      box-shadow: var(--shadow-lg) !important;
+    }
+
+    .dropdown-item {
+      color: var(--text-2) !important;
+      border-bottom: 1px solid var(--border) !important;
+    }
+
+    .dropdown-item:hover {
+      background: var(--gold) !important;
+      color: #080B11 !important;
+    }
+
+    /* Tips & Guide Info */
+    .guide-row {
+      color: var(--text-2) !important;
+    }
+
+    .flow-desc {
+      color: var(--text-3) !important;
+    }
+
+    .tip-item {
+      color: var(--text-3) !important;
+    }
+
+    /* Global Navbar dark glass overrides */
+    header, nav, .navbar {
+      background: var(--nav-bg) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border-bottom: 1px solid var(--nav-border) !important;
+    }
+
+    /* Enforce size input styling and override any global inputs types at the end of stylesheet */
+    input[type="number"].style-size-input {
+      box-sizing: border-box !important;
+      height: 32px !important;
+      width: 55px !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+      text-align: center !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 4px !important;
+      background: var(--surface-2) !important;
+      color: var(--text-2) !important;
+      outline: none !important;
+      padding: 0 !important;
+      flex: none !important;
+      transition: border-color .15s, background .15s, color .15s !important;
+    }
+
+    input[type="number"].style-size-input:hover {
+      border-color: var(--gold) !important;
+    }
+
+    input[type="number"].style-size-input:focus {
+      border-color: var(--gold) !important;
+      background: var(--surface) !important;
+      color: var(--text-1) !important;
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, .14) !important;
+    }
+  </style>
+
+  <script>
+    // Auto-resize iframe height for parent compatibility
+    function reportHeight() {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({
+            type: 'setHeight',
+            height: height
+        }, '*');
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight);
+    // Periodically report in case of dynamic content
+    setInterval(reportHeight, 1000);
+  </script>
+{% endblock %}
+
+{% block content %}
+  {% if not is_embedded %}
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-tag">AI-Powered Magazine Generator</div>
+      <h1>Turn Word Files Into<br><em>Professional Magazines</em></h1>
+      <p>AI automatically analyzes &amp; formats content — creating beautiful PDF magazines in seconds</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- MAIN FORM -->
+  <div class="page-wrapper">
+    <div class="page-inner">
+      <div class="page-body">
+
+        <!-- LEFT COLUMN -->
+        <div class="left-column">
+          <form method="POST" enctype="multipart/form-data" id="mainForm">
+
+            <!-- STEP 1: STYLE -->
+            <div class="section">
+              <div class="section-head">
+                <div class="step-num">1</div>
+                <div>
+                  <h2 data-i18n="Fashion Style">Fashion Style</h2>
+                  <p data-i18n="Unique typography & colors — randomly generated for each creation">Unique typography & colors — randomly generated for each creation</p>
+                </div>
+              </div>
+              <input type="hidden" name="template_key" id="templateInput" value="RANDOM_FASHION">
+              <div class="template-grid journalism-fashion-grid">
+                <!-- Card 1: Fashion Style -->
+                <div class="tpl-card active" data-key="RANDOM_FASHION" onclick="selectTemplate(this)">
+                  <svg class="tpl-preview" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg"
+                    style="aspect-ratio: 3/2; width: 100%; height: auto;">
+                    <rect width="180" height="120" fill="#0D0D0D" />
+                    <rect x="0" y="0" width="90" height="120" fill="#2A2A2A" />
+                    <path d="M 20 120 L 45 40 L 90 120 Z" fill="#444" />
+                    <circle cx="60" cy="40" r="15" fill="#555" />
+                    <rect x="0" y="0" width="90" height="120" fill="#000" fill-opacity="0.3" />
+                    <rect x="90" y="0" width="90" height="120" fill="#FAFAFA" />
+                    <text x="135" y="25" font-family="serif" font-size="12" font-weight="bold" fill="#0D0D0D"
+                      text-anchor="middle">FASHION</text>
+                    <rect x="120" y="32" width="30" height="1" fill="#D4AF37" />
+                    <rect x="100" y="42" width="12" height="12" fill="#D4AF37" />
+                    <rect x="115" y="44" width="25" height="1.5" fill="#333" />
+                    <rect x="115" y="48" width="22" height="1.5" fill="#333" />
+                    <rect x="100" y="60" width="35" height="1.5" fill="#555" />
+                    <rect x="100" y="64" width="30" height="1.5" fill="#555" />
+                    <rect x="140" y="44" width="30" height="1.5" fill="#555" />
+                    <rect x="140" y="48" width="35" height="1.5" fill="#555" />
+                    <circle cx="160" cy="100" r="10" fill="#D4AF37" fill-opacity="0.2" />
+                    <path d="M 160 92 L 162 98 L 168 100 L 162 102 L 160 108 L 158 102 L 152 100 L 158 98 Z" fill="#D4AF37" />
+                  </svg>
+                  <div class="tpl-info" style="padding: 6px 8px;">
+                    <div class="tpl-check" style="width: 16px; height: 16px; bottom: 40px;"><svg viewBox="0 0 10 10">
+                        <polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none"
+                          stroke-linecap="round" />
+                      </svg></div>
+                    <div class="tpl-name" data-i18n="fashion_style" style="font-size: 10px;">FASHION STYLE</div>
+                    <div class="tpl-desc" data-i18n="fashion_style_desc" style="font-size: 9px;">Elegant & Professional</div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Journalism Style -->
+                <div class="tpl-card" data-key="NEWS" onclick="selectTemplate(this)">
+                  <svg class="tpl-preview" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg"
+                    style="aspect-ratio: 3/2; width: 100%; height: auto;">
+                    <rect width="180" height="120" fill="#FAFAFA" />
+                    <rect x="10" y="10" width="100" height="10" fill="#B0232A" />
+                    <rect x="10" y="24" width="160" height="2" fill="#333" />
+                    <!-- Columns -->
+                    <rect x="10" y="32" width="48" height="80" fill="#EEEEEE" />
+                    <rect x="66" y="32" width="48" height="80" fill="#EEEEEE" />
+                    <rect x="122" y="32" width="48" height="80" fill="#EEEEEE" />
+                    <!-- Text lines in columns -->
+                    <rect x="15" y="40" width="38" height="1.5" fill="#DDD" />
+                    <rect x="15" y="45" width="38" height="1.5" fill="#DDD" />
+                    <rect x="71" y="40" width="38" height="1.5" fill="#DDD" />
+                    <rect x="71" y="45" width="38" height="1.5" fill="#DDD" />
+                  </svg>
+                  <div class="tpl-info" style="padding: 6px 8px;">
+                    <div class="tpl-check" style="width: 16px; height: 16px; bottom: 40px;"><svg viewBox="0 0 10 10">
+                        <polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none"
+                          stroke-linecap="round" />
+                      </svg></div>
+                    <div class="tpl-name" data-i18n="news_style" style="font-size: 10px;">NEWS STYLE</div>
+                    <div class="tpl-desc" data-i18n="news_style_desc" style="font-size: 9px;">3-Columns & Traditional</div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Tech & Science Style -->
+                <div class="tpl-card" data-key="TECH" onclick="selectTemplate(this)">
+                  <svg class="tpl-preview" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg"
+                    style="aspect-ratio: 3/2; width: 100%; height: auto;">
+                    <rect width="180" height="120" fill="#05050A" />
+                    <!-- Futuristic circuit/grid background -->
+                    <path d="M 0 20 L 180 20 M 0 40 L 180 40 M 0 60 L 180 60 M 0 80 L 180 80 M 0 100 L 180 100" stroke="#11111A" stroke-width="1" />
+                    <rect x="10" y="10" width="160" height="2" fill="#00FFCC" />
+                    <rect x="10" y="10" width="2" height="10" fill="#00FFCC" />
+                    <rect x="168" y="10" width="2" height="10" fill="#00FFCC" />
+                    <!-- Dark columns -->
+                    <rect x="15" y="24" width="70" height="85" fill="#0D0D12" stroke="#00FFCC" stroke-width="0.5" />
+                    <rect x="95" y="24" width="70" height="85" fill="#0D0D12" stroke="#FF00FF" stroke-width="0.5" />
+                    <!-- Bright neon elements inside -->
+                    <rect x="20" y="30" width="60" height="40" fill="#1A1A24" />
+                    <rect x="100" y="30" width="40" height="4" fill="#00FFCC" />
+                    <rect x="100" y="38" width="60" height="2" fill="#FF00FF" />
+                    <rect x="100" y="44" width="60" height="2" fill="#8892B0" />
+                    <rect x="100" y="50" width="60" height="2" fill="#8892B0" />
+                    <!-- Futuristic Chart element -->
+                    <circle cx="130" cy="80" r="15" fill="none" stroke="#00FFCC" stroke-width="1.5" />
+                    <circle cx="130" cy="80" r="10" fill="#FF00FF" fill-opacity="0.3" />
+                    <rect x="20" y="75" width="60" height="1.5" fill="#00FFCC" />
+                    <rect x="20" y="81" width="60" height="1.5" fill="#8892B0" />
+                  </svg>
+                  <div class="tpl-info" style="padding: 6px 8px;">
+                    <div class="tpl-check" style="width: 16px; height: 16px; bottom: 40px;"><svg viewBox="0 0 10 10">
+                        <polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none"
+                          stroke-linecap="round" />
+                      </svg></div>
+                    <div class="tpl-name" data-i18n="tech_style" style="font-size: 10px; color: #00FFCC;">TECH STYLE</div>
+                    <div class="tpl-desc" data-i18n="tech_style_desc" style="font-size: 9px;">Futuristic & Dark Mode</div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /section 1 -->
+
+            <!-- STEP 2: COVER DESIGN -->
+            <div class="section">
+              <div class="section-head">
+                <div class="step-num">2</div>
+                <div>
+                  <h2 data-i18n="Design Magazine Cover">Design Magazine Cover</h2>
+                  <p data-i18n="Customize your magazine cover directly (drag and drop to move text).">Customize your magazine cover directly (drag and drop to move text).</p>
+                </div>
+              </div>
+
+              <div class="cover-layout">
+                <div>
+                  <!-- Step 2 Designer Tabs -->
+                  <div class="designer-tabs">
+                    <button type="button" class="designer-tab-btn active" onclick="switchDesignerTab('info')" data-i18n="Cover Info">Cover Info</button>
+                    <button type="button" class="designer-tab-btn" onclick="switchDesignerTab('layout-images')" data-i18n="Layout & Images">Layout & Images</button>
+                    <button type="button" class="designer-tab-btn" onclick="switchDesignerTab('typography')" data-i18n="Typography Styles">Typography</button>
+                  </div>
+
+                  <!-- Tab 1: Cover Info -->
+                  <div class="designer-tab-content active" id="tab-info">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                      <label data-i18n="Magazine Title">Magazine Title</label>
+                      <input class="form-input" type="text" name="magazine_title" id="magazineTitle"
+                        placeholder="e.g. VOGUE" value="VOGUE" maxlength="20">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                      <label data-i18n="Subtitle">Subtitle</label>
+                      <input class="form-input" type="text" name="magazine_subtitle" id="magazineSubtitle"
+                        placeholder="e.g. SPRING 2025" value="EDITORIAL ISSUE" maxlength="40">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                      <label data-i18n="Author Name (Editor in Chief)">Author Name (Editor in Chief)</label>
+                      <input class="form-input" type="text" name="author_name" id="authorName"
+                        data-i18n="e.g. John Doe" placeholder="e.g. John Doe" value="" maxlength="50">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                      <label data-i18n="Publication Date">Publication Date</label>
+                      <div style="display:flex; gap:8px; align-items: center;">
+                        <input class="form-input" type="text" name="pub_date" id="pubDateInput"
+                          data-i18n="e.g. MAY 2026" placeholder="e.g. MAY 2026" value="" maxlength="20" style="flex:1;">
+                        <button type="button" class="btn-add-text" onclick="autoDate()" data-i18n="Auto"
+                          style="height: 40px; padding:0 16px; white-space:nowrap; flex-shrink:0; border-radius: var(--radius-sm); box-sizing: border-box; display: flex; align-items: center; justify-content: center;">Auto</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tab 2: Layout & Images -->
+                  <div class="designer-tab-content" id="tab-layout-images">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label data-i18n="Cover Image Layout (Drag borders to resize)">Cover Image Layout (Drag borders to resize)</label>
+                        <div class="layout-options">
+                          <div class="layout-opt active" data-val="1" onclick="selectCoverLayout(1)">
+                            <div class="lo-box">
+                              <div class="lo-half"></div>
+                            </div>
+                          </div>
+                          <div class="layout-opt" data-val="2" onclick="selectCoverLayout(2)">
+                            <div class="lo-box">
+                              <div class="lo-half"></div>
+                              <div class="lo-half"></div>
+                            </div>
+                          </div>
+                          <div class="layout-opt" data-val="3" onclick="selectCoverLayout(3)">
+                            <div class="lo-box lo-3">
+                              <div class="lo-left"></div>
+                              <div class="lo-right">
+                                <div class="lo-top"></div>
+                                <div class="lo-bot"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <input type="hidden" id="coverLayout" value="1">
+                      </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                      <label data-i18n="Upload Front Cover Images (Click to select)">Upload Front Cover Images (Click to select)</label>
+                      <div class="layout-grid layout-1" id="layoutGrid" style="position: relative;">
+                        <label class="layout-slot slot-0" style="position: relative; cursor: pointer; display: flex;" for="slotFile0">
+                          <input type="file" id="slotFile0" accept="image/*" onchange="handleSlotUpload(0, this)" style="display: none;">
+                          <div class="slot-bg" id="slotBg0"></div>
+                          <div class="slot-text">
+                            <i class="fas fa-image slot-icon"></i>
+                            <span class="slot-label" data-i18n="Image 1">Image 1</span>
+                          </div>
+                        </label>
+                        <label class="layout-slot slot-1" id="slotContainer1" style="display:none; position: relative; cursor: pointer;" for="slotFile1">
+                          <input type="file" id="slotFile1" accept="image/*" onchange="handleSlotUpload(1, this)" style="display: none;">
+                          <div class="slot-bg" id="slotBg1"></div>
+                          <div class="slot-text">
+                            <i class="fas fa-image slot-icon"></i>
+                            <span class="slot-label" data-i18n="Image 2">Image 2</span>
+                          </div>
+                        </label>
+                        <label class="layout-slot slot-2" id="slotContainer2" style="display:none; position: relative; cursor: pointer;" for="slotFile2">
+                          <input type="file" id="slotFile2" accept="image/*" onchange="handleSlotUpload(2, this)" style="display: none;">
+                          <div class="slot-bg" id="slotBg2"></div>
+                          <div class="slot-text">
+                            <i class="fas fa-image slot-icon"></i>
+                            <span class="slot-label" data-i18n="Image 3">Image 3</span>
+                          </div>
+                        </label>
+                        <div class="layout-resizer" id="gridResizerX"
+                          style="display:none; cursor: col-resize; top:0; bottom:0; width:12px; margin-left:-6px;"></div>
+                        <div class="layout-resizer" id="gridResizerY"
+                          style="display:none; cursor: row-resize; left:0; right:0; height:12px; margin-top:-6px;"></div>
+                      </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                      <label data-i18n="Upload Back Cover (Bìa 2 / Bìa 4)">Upload Back Cover (Bìa 2 / Bìa 4)</label>
+                      <div class="layout-grid layout-1" style="position: relative;">
+                        <label class="layout-slot slot-0" id="backCoverDropZone" style="position: relative; cursor: pointer; display: flex;" for="backCoverInput">
+                          <input type="file" id="backCoverInput" name="back_cover_image" accept="image/*" onchange="handleBackCoverUpload(this)" style="display: none;">
+                          <div class="slot-bg" id="backCoverBg"></div>
+                          <div class="slot-text">
+                            <i class="fas fa-file-image slot-icon"></i>
+                            <span class="slot-label" data-i18n="Drag & drop Back Cover here">Drag & drop Back Cover here</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tab 3: Typography Styles -->
+                  <div class="designer-tab-content" id="tab-typography">
+                    <div class="text-controls" style="margin-top: 0; padding: 16px;">
+                      <h4 data-i18n="Text Styles" style="margin-bottom: 12px; font-family: 'Playfair Display', serif; letter-spacing: 0.04em; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 8px;">✨ Text Typography</h4>
+                      
+                      <!-- Element Style Selector -->
+                      <div class="style-selector-wrap" style="margin-bottom: 10px;">
+                        <label style="font-size: 11px; margin-bottom: 4px; font-weight: 700; color: var(--text-3);" data-i18n="Select element to style">Select Element</label>
+                        <div class="custom-dropdown" id="styleElementDropdown" style="width: 100%;">
+                          <div class="dropdown-trigger" onclick="toggleDropdown('styleElementDropdown')" style="height: 32px; font-size: 12px; border: 1px solid var(--gold); border-radius: 8px;">
+                            <span id="styleElementActiveLabel" data-i18n="Main Title Option">Main Title</span>
+                            <i class="fas fa-chevron-down" style="color: var(--gold); font-size: 10px;"></i>
+                          </div>
+                          <div class="dropdown-menu">
+                            <div class="dropdown-item active" onclick="selectStyleElement('title', this)" data-value="title" data-i18n="Main Title Option">Main Title</div>
+                            <div class="dropdown-item" onclick="selectStyleElement('subtitle', this)" data-value="subtitle" data-i18n="Subtitle Option">Subtitle</div>
+                            <div class="dropdown-item" onclick="selectStyleElement('date', this)" data-value="date" data-i18n="Date Option">Publication Date</div>
+                            <div class="dropdown-item" onclick="selectStyleElement('barcode', this)" data-value="barcode" data-i18n="Barcode Option">Barcode & ISSN</div>
+                          </div>
+                        </div>
+                        <select id="styleElementSelect" onchange="switchStylePanel(this.value)" style="display: none;">
+                          <option value="title" data-i18n="Main Title Option" selected>Main Title</option>
+                          <option value="subtitle" data-i18n="Subtitle Option">Subtitle</option>
+                          <option value="date" data-i18n="Date Option">Publication Date</option>
+                          <option value="barcode" data-i18n="Barcode Option">Barcode & ISSN</option>
+                        </select>
+                      </div>
+
+                      <div style="position: relative; margin-bottom: 14px;">
+                        <!-- Main Title panel -->
+                        <div class="style-panel active" id="panel-title">
+                          <span class="style-panel-label" data-i18n="Main Title">Main Title</span>
+                          <div class="style-row">
+                            <div class="custom-dropdown" id="titleFontDropdown" style="flex: 1;">
+                              <div class="dropdown-trigger" onclick="toggleDropdown('titleFontDropdown')" style="height: 30px;">
+                                <span id="titleFontLabel">Serif Font</span>
+                                <i class="fas fa-chevron-down"></i>
+                              </div>
+                              <div class="dropdown-menu">
+                                <div class="dropdown-item" onclick="pickFont('title','serif','Serif Font')">Serif Font</div>
+                                <div class="dropdown-item" onclick="pickFont('title','sans-serif','Sans Font')">Sans Font</div>
+                                <div class="dropdown-item" onclick="pickFont('title','Georgia','Georgia')">Georgia</div>
+                                <div class="dropdown-item" onclick="pickFont('title','Arial','Arial')">Arial</div>
+                                <div class="dropdown-item" onclick="pickFont('title','monospace','Monospace')">Monospace</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="style-row" style="margin-bottom: 0; justify-content: space-between;">
+                            <div class="color-palette" id="titleColorPalette" style="gap:4px; padding:0; flex:1;">
+                              <div class="color-dot active" style="background:#333333; width:16px; height:16px;" onclick="pickColor('title','#333333',this)"></div>
+                              <div class="color-dot" style="background:#B0232A; width:16px; height:16px;" onclick="pickColor('title','#B0232A',this)"></div>
+                              <div class="color-dot" style="background:#C9A84C; width:16px; height:16px;" onclick="pickColor('title','#C9A84C',this)"></div>
+                              <div class="color-dot" style="background:#2A4B8D; width:16px; height:16px;" onclick="pickColor('title','#2A4B8D',this)"></div>
+                              <div class="color-dot" style="background:#FFFFFF; width:16px; height:16px;" onclick="pickColor('title','#FFFFFF',this)"></div>
+                              <div class="color-dot" style="background:#000000; width:16px; height:16px;" onclick="pickColor('title','#000000',this)"></div>
+                            </div>
+                            <div style="display:flex; gap:4px; align-items:center;">
+                              <button type="button" class="style-btn" id="titleBold" onclick="toggleStyle('title','bold')" style="height:28px; width:28px; padding:0; flex:none;">B</button>
+                              <button type="button" class="style-btn" id="titleItalic" onclick="toggleStyle('title','italic')" style="height:28px; width:28px; font-style:italic; padding:0; flex:none;">I</button>
+                              <input type="number" id="titleSize" value="90" min="10" max="300" class="style-size-input" style="height:28px !important; width:45px; flex:none; font-size:11px;" oninput="textStyles.title.size=parseInt(this.value);renderCover();">
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Subtitle panel -->
+                        <div class="style-panel" id="panel-subtitle">
+                          <span class="style-panel-label" data-i18n="Subtitle">Subtitle</span>
+                          <div class="style-row">
+                            <div class="custom-dropdown" id="subtitleFontDropdown" style="flex: 1;">
+                              <div class="dropdown-trigger" onclick="toggleDropdown('subtitleFontDropdown')" style="height: 30px;">
+                                <span id="subtitleFontLabel">Sans Font</span>
+                                <i class="fas fa-chevron-down"></i>
+                              </div>
+                              <div class="dropdown-menu">
+                                <div class="dropdown-item" onclick="pickFont('subtitle','sans-serif','Sans Font')">Sans Font</div>
+                                <div class="dropdown-item" onclick="pickFont('subtitle','serif','Serif')">Serif</div>
+                                <div class="dropdown-item" onclick="pickFont('subtitle','Georgia','Georgia')">Georgia</div>
+                                <div class="dropdown-item" onclick="pickFont('subtitle','Arial','Arial')">Arial</div>
+                                <div class="dropdown-item" onclick="pickFont('subtitle','monospace','Monospace')">Monospace</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="style-row" style="margin-bottom: 0; justify-content: space-between;">
+                            <div class="color-palette" id="subtitleColorPalette" style="gap:4px; padding:0; flex:1;">
+                              <div class="color-dot active" style="background:#666666; width:16px; height:16px;" onclick="pickColor('subtitle','#666666',this)"></div>
+                              <div class="color-dot" style="background:#B0232A; width:16px; height:16px;" onclick="pickColor('subtitle','#B0232A',this)"></div>
+                              <div class="color-dot" style="background:#C9A84C; width:16px; height:16px;" onclick="pickColor('subtitle','#C9A84C',this)"></div>
+                              <div class="color-dot" style="background:#2A4B8D; width:16px; height:16px;" onclick="pickColor('subtitle','#2A4B8D',this)"></div>
+                              <div class="color-dot" style="background:#FFFFFF; width:16px; height:16px;" onclick="pickColor('subtitle','#FFFFFF',this)"></div>
+                              <div class="color-dot" style="background:#000000; width:16px; height:16px;" onclick="pickColor('subtitle','#000000',this)"></div>
+                            </div>
+                            <div style="display:flex; gap:4px; align-items:center;">
+                              <button type="button" class="style-btn" id="subtitleBold" onclick="toggleStyle('subtitle','bold')" style="height:28px; width:28px; padding:0; flex:none;">B</button>
+                              <button type="button" class="style-btn" id="subtitleItalic" onclick="toggleStyle('subtitle','italic')" style="height:28px; width:28px; font-style:italic; padding:0; flex:none;">I</button>
+                              <input type="number" id="subtitleSize" value="45" min="5" max="200" class="style-size-input" style="height:28px !important; width:45px; flex:none; font-size:11px;" oninput="textStyles.subtitle.size=parseInt(this.value);renderCover();">
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Date panel -->
+                        <div class="style-panel" id="panel-date">
+                          <span class="style-panel-label" data-i18n="Publication Date">Publication Date</span>
+                          <div class="style-row">
+                            <div class="custom-dropdown" id="dateFontDropdown" style="flex: 1;">
+                              <div class="dropdown-trigger" onclick="toggleDropdown('dateFontDropdown')" style="height: 30px;">
+                                <span id="dateFontLabel">Sans Font</span>
+                                <i class="fas fa-chevron-down"></i>
+                              </div>
+                              <div class="dropdown-menu">
+                                <div class="dropdown-item" onclick="pickFont('date','sans-serif','Sans Font')">Sans Font</div>
+                                <div class="dropdown-item" onclick="pickFont('date','serif','Serif')">Serif</div>
+                                <div class="dropdown-item" onclick="pickFont('date','Georgia','Georgia')">Georgia</div>
+                                <div class="dropdown-item" onclick="pickFont('date','Arial','Arial')">Arial</div>
+                                <div class="dropdown-item" onclick="pickFont('date','monospace','Monospace')">Monospace</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="style-row" style="margin-bottom: 0; justify-content: space-between;">
+                            <div class="color-palette" id="dateColorPalette" style="gap:4px; padding:0; flex:1;">
+                              <div class="color-dot active" style="background:#666666; width:16px; height:16px;" onclick="pickColor('date','#666666',this)"></div>
+                              <div class="color-dot" style="background:#B0232A; width:16px; height:16px;" onclick="pickColor('date','#B0232A',this)"></div>
+                              <div class="color-dot" style="background:#C9A84C; width:16px; height:16px;" onclick="pickColor('date','#C9A84C',this)"></div>
+                              <div class="color-dot" style="background:#2A4B8D; width:16px; height:16px;" onclick="pickColor('date','#2A4B8D',this)"></div>
+                              <div class="color-dot" style="background:#FFFFFF; width:16px; height:16px;" onclick="pickColor('date','#FFFFFF',this)"></div>
+                              <div class="color-dot" style="background:#000000; width:16px; height:16px;" onclick="pickColor('date','#000000',this)"></div>
+                            </div>
+                            <div style="display:flex; gap:4px; align-items:center;">
+                              <button type="button" class="style-btn" id="dateBold" onclick="toggleStyle('date','bold')" style="height:28px; width:28px; padding:0; flex:none;">B</button>
+                              <button type="button" class="style-btn" id="dateItalic" onclick="toggleStyle('date','italic')" style="height:28px; width:28px; font-style:italic; padding:0; flex:none;">I</button>
+                              <input type="number" id="dateSize" value="25" min="5" max="100" class="style-size-input" style="height:28px !important; width:45px; flex:none; font-size:11px;" oninput="textStyles.date.size=parseInt(this.value);renderCover();">
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Barcode panel -->
+                        <div class="style-panel" id="panel-barcode">
+                          <span class="style-panel-label" data-i18n="Barcode & ISSN">Barcode & ISSN</span>
+                          <div class="style-row" style="margin-bottom: 6px;">
+                            <input type="text" id="issnInput" class="form-input" placeholder="ISSN Code"
+                              style="height:28px; font-size:11px; flex:1;"
+                              oninput="issnData.code=this.value;renderCover();">
+                            <button type="button" class="style-btn" onclick="randomBarcode()"
+                              style="flex:none; width:30px; height:28px; margin-left: 6px; padding:0;"><i class="fas fa-random"></i></button>
+                          </div>
+                          <div class="style-row" style="margin-bottom: 0;">
+                            <span style="font-size:9px; color:var(--text-3); font-weight:700; margin-right: 8px;" data-i18n="SIZE">SIZE</span>
+                            <input type="range" id="barcodeSize" min="20" max="100" value="40" style="flex:1;"
+                              oninput="barcodeData.size=parseInt(this.value);renderCover();">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="custom-text-header">
+                        <label><i class="fas fa-plus"></i> <span data-i18n="Custom Text">Custom Text</span></label>
+                        <button type="button" class="btn-add-text" onclick="addCustomText()" data-i18n="Add Text">Add Text</button>
+                      </div>
+                      <div id="customTextsList"></div>
+                      <p class="text-controls-hint" data-i18n="💡 Drag & drop directly on preview to move text">💡 Drag & drop directly on preview to move text</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="cover-preview-wrap">
+                  <div class="cover-previews-container">
+                    <div style="width: 100%;">
+                      <div class="cover-preview-label" style="margin-bottom: 8px;" data-i18n="Front Cover (Bìa 1)">Front Cover (Bìa 1)</div>
+                      <div class="cover-canvas-container" style="border: 2px solid var(--gold);">
+                        <canvas id="coverCanvas" width="1200" height="1600"
+                          style="width: 100%; height: 100%; object-fit: contain;"
+                          ondblclick="document.getElementById('slotFile0').click()"
+                          title="Double-click to upload Front Cover Image"></canvas>
+                      </div>
+                    </div>
+                    
+                    <div style="width: 100%;">
+                      <div class="cover-preview-label" style="margin-bottom: 8px;" data-i18n="Back Cover (Bìa 2/4)">Back Cover (Bìa 2/4)</div>
+                      <div class="cover-canvas-container">
+                        <canvas id="backCoverCanvas" width="1200" height="1600"
+                          style="width: 100%; height: 100%; object-fit: contain; cursor: pointer;"
+                          onclick="document.getElementById('backCoverInput').click()"
+                          title="Click to upload Back Cover"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="text-controls-hint" style="margin-top: 4px;" data-i18n="💡 Drag text on Front Cover preview">💡 Drag text on Front Cover preview</p>
+                </div>
+              </div>
+            </div><!-- /section 2 -->
+
+            <!-- STEP 3: UPLOAD -->
+            <div class="section">
+              <div class="section-head">
+                <div class="step-num">3</div>
+                <div>
+                  <h2 data-i18n="Upload Word File &amp; Images">Upload Word File &amp; Images</h2>
+                  <p data-i18n="Word file containing the article. You can also drag and drop a PDF file to append it to the end of the magazine.">Word file containing the article. You can also drag and drop a PDF file to append it to the end of
+                    the magazine.</p>
+                </div>
+              </div>
+
+              <div class="ai-badge" data-i18n="✦ AI Engine: OpenRouter / Mistral-7B — Classifying: title · heading · intro · body · pullquote · caption">✦ AI Engine: OpenRouter / Mistral-7B — Classifying: title · heading · intro · body ·
+                pullquote · caption</div>
+
+              <input type="hidden" name="cover_base64" id="coverBase64">
+
+              <div class="file-drop" id="wordDropZone">
+                <input type="file" name="files" id="wordFileInput" accept=".docx" multiple style="display:none;">
+                <div onclick="document.getElementById('wordFileInput').click()" style="cursor:pointer; width:100%;">
+                  <div class="file-drop-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <polyline points="14,2 14,8 20,8" />
+                      <line x1="12" y1="18" x2="12" y2="12" />
+                      <line x1="9" y1="15" x2="15" y2="15" />
+                    </svg>
+                  </div>
+                  <div class="file-drop-title" data-i18n="Drag & drop Word files (.docx) here (Max 10 files)">Drag & drop Word files (.docx) here (Max 10 files)</div>
+                  <div class="file-drop-sub" data-i18n="Each file will be a chapter • Rename, add Author/Topic, and reorder below">Each file will be a chapter • Rename, add Author/Topic, and reorder below
+                  </div>
+                </div>
+
+                <div id="wordFileList"
+                  style="margin-top:20px; display:flex; flex-direction:column; gap:15px; width:100%; max-width:600px; margin-left: auto; margin-right: auto;">
+                  <!-- Dynamic file items will be here -->
+                </div>
+              </div>
+
+              <div class="guide-box"
+                style="padding: 24px; background: var(--surface); border: 1px solid var(--gold); box-shadow: var(--shadow-md);">
+                <h4
+                  style="font-size:16px; margin-bottom:18px; color:var(--gold); border-bottom:2px solid var(--gold); padding-bottom:10px; display:flex; align-items:center; gap:8px;" data-i18n="Pro Tips for Beautiful AI Magazines">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  Pro Tips for Beautiful AI Magazines
+                </h4>
+
+                <div class="responsive-grid-2" style="margin-bottom: 20px;">
+                  <div style="background: var(--surface-2); padding: 15px; border-radius: 8px;">
+                    <b
+                      style="font-size: 13px; color: var(--text-1); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="✅ Standard Structure">✅
+                      Standard Structure</b>
+                    <div class="guide-row"><span class="guide-dot dot-green"></span>
+                      <div><b>Chapter Title:</b> Size 22-24, Bold. (New page start)</div>
+                  </div>
+                  <div class="guide-row"><span class="guide-dot dot-green"></span>
+                    <div><b>Article Title:</b> Size 16-18, Bold, CAPS.</div>
+                  </div>
+                  <div class="guide-row"><span class="guide-dot dot-green"></span>
+                    <div><b>Body Text:</b> Size 11, Justified alignment.</div>
+                  </div>
+                  <div class="guide-row"><span class="guide-dot dot-green"></span>
+                    <div><b>Quotes:</b> Use "quotes" for highlights.</div>
+                  </div>
+                </div>
+                <div style="background: var(--surface-2); padding: 15px; border-radius: 8px;">
+                  <b
+                    style="font-size: 13px; color: var(--text-1); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="📸 Images & Captions">📸
+                    Images & Captions</b>
+                  <div class="guide-row"><span class="guide-dot dot-green"></span>
+                    <div><b>Placement:</b> Insert image <b>after</b> the paragraph to illustrate.</div>
+                  </div>
+                  <div class="guide-row"><span class="guide-dot dot-green"></span>
+                    <div><b>Caption:</b> Write "Image: [Description]" below the image.</div>
+                  </div>
+                  <div class="guide-row"><span class="guide-dot dot-green"></span>
+                    <div><b>Portrait Image:</b> Use vertical photos for best results.</div>
+                  </div>
+                  <div class="guide-row"><span class="guide-dot dot-red"></span>
+                    <div><b>Avoid:</b> Tables, Text boxes, Complex shapes.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 0;">
+                <b
+                  style="font-size: 13px; color: var(--gold); display: flex; align-items:center; gap:6px; margin-bottom: 10px;" data-i18n="Super Prompt to help AI format content (ChatGPT/Claude/Gemini)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  Super Prompt to help AI format content (ChatGPT/Claude/Gemini)
+                </b>
+                <div
+                  style="background:var(--surface-2); border:1px solid var(--border); padding:16px; border-radius:10px; position:relative; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);">
+                  <code id="aiPrompt"
+                    style="display:block; white-space:pre-wrap; font-size:12px; color:var(--text-1); line-height:1.6; font-family: 'Consolas', monospace;">I have uploaded a Word file containing article content. Please read this document carefully and act as a professional Magazine Editor to format the content according to these "AI Magazine" rules for perfect AI parsing:
+
+1. ARTICLE STRUCTURE:
+   - CHAPTER TITLE: Font size 24, Bold, Centered (for each new chapter).
+   - MAIN TITLE: Font size 18, Bold, ALL CAPS (the title of the article).
+   - INTRO: 1-2 sentences, italics, summarizing the story.
+   - SUBHEADINGS: ALL CAPS, bold, on a NEW LINE.
+   - BODY TEXT: Font size 11, Justified alignment.
+   - HIGHLIGHTS: Choose 1-2 powerful sentences and put them on their own line inside "double quotes".
+   - IMAGE PLACEMENT: Write "Image: [Short description of the photo]" exactly where the photo should appear.
+
+2. TECHNICAL REQUIREMENTS:
+   - Format: Pure text structure. No Tables, No Text Boxes, No complex Shapes.
+   - Output: Provide a clean, perfectly structured Word (.docx) file based on these rules.
+
+Please analyze my document and re-format it to match these requirements exactly.</code>
+                  <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                    <button type="button" onclick="copyPrompt()"
+                      style="background:var(--gold); color:#18160F; border:none; padding:8px 16px; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; transition: 0.2s;"
+                      onmouseover="this.style.background='var(--gold-light)'"
+                      onmouseout="this.style.background='var(--gold)'" data-i18n="COPY SUPER PROMPT">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      COPY SUPER PROMPT
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <script>
+              function copyPrompt() {
+                const text = document.getElementById('aiPrompt').innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                  alert(t('Prompt copied! You can paste it into ChatGPT/Claude.'));
+                });
+              }
+            </script>
+
+              <!-- STEP 4: JOURNAL METADATA -->
+              <div class="section">
+                <div class="section-head">
+                  <div class="step-num">4</div>
+                  <div>
+                    <h2 data-i18n="Journal Metadata & Editorial">Journal Metadata & Editorial</h2>
+                    <p data-i18n="Information for the Masthead and Table of Contents page.">Information for the Masthead and Table of Contents page.</p>
+                  </div>
+                </div>
+
+                <!-- Box: Hội đồng & Ban biên tập -->
+                <div class="form-section-title" style="margin-top:20px;"><i class="fas fa-users"></i> <span data-i18n="HỘI ĐỒNG & BAN BIÊN TẬP">HỘI ĐỒNG & BAN
+                  BIÊN TẬP</span></div>
+                <div class="responsive-grid-2">
+                  <div class="form-group">
+                    <label data-i18n="HỘI ĐỒNG CHỈ ĐẠO">HỘI ĐỒNG CHỈ ĐẠO</label>
+                    <textarea name="council_info" class="form-input" style="height:120px;"
+                      placeholder="ThS. Bùi Quang Huy...">ThS. Bùi Quang Huy
+Ủy viên dự khuyết BCH Trung ương Đảng
+Bí thư thứ nhất T.Ư Đoàn
+TS. Nguyễn Hải Đăng
+TS. Lê Văn Cầu</textarea>
+                  </div>
+                  <div class="form-group">
+                    <label data-i18n="BAN BIÊN TẬP">BAN BIÊN TẬP</label>
+                    <textarea name="editorial_board" class="form-input" style="height:120px;"
+                      placeholder="Editor in Chief...">Nguyễn Toàn Thắng - Tổng biên tập</textarea>
+                  </div>
+                </div>
+
+                <!-- Box: Tòa soạn & Văn phòng -->
+                <div class="form-section-title"><i class="fas fa-building"></i> <span data-i18n="THÔNG TIN TÒA SOẠN">THÔNG TIN TÒA SOẠN</span></div>
+                <div class="form-group">
+                  <label data-i18n="ĐỊA CHỈ TÒA SOẠN">ĐỊA CHỈ TÒA SOẠN</label>
+                  <textarea name="office_info" class="form-input" style="height:100px;"
+                    placeholder="Address, Tel, Email...">Số 5 Chùa Láng - phường Láng - TP. Hà Nội
+Tel: 024.37751672; Tel/Fax: 024.37751798
+Email: tapchithanhnien4.0@gmail.com
+Tổng biên tập: Nguyễn Toàn Thắng</textarea>
+                </div>
+
+                <div class="responsive-grid-2">
+                  <div class="form-group">
+                    <label data-i18n="VĂN PHÒNG ĐẠI DIỆN">VĂN PHÒNG ĐẠI DIỆN</label>
+                    <textarea name="reps_info" class="form-input" style="height:100px;"
+                      placeholder="Representative Offices...">Ban đại diện phía Nam
+145 Pasteur, phường Xuân Hòa, TP. HCM
+Tel: 028.3422616</textarea>
+                  </div>
+                  <div class="form-group">
+                    <label data-i18n="GIẤY PHÉP & ISSN">GIẤY PHÉP & ISSN</label>
+                    <textarea name="license_info" class="form-input" style="height:100px;"
+                      placeholder="License, ISSN...">Giấy phép xuất bản số: 158/GP-BTTTT
+Ngày 15/4/2020
+Chỉ số xuất bản: ISSN 2734 - 9012
+In tại Công ty TNHH MTV</textarea>
+                  </div>
+                </div>
+
+                <div class="form-group" style="max-width:200px;">
+                  <label data-i18n="GIÁ BÌA">GIÁ BÌA</label>
+                  <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="text" id="priceDisplayInput" class="form-input" value="30.000" style="padding-right: 55px; width: 100%;">
+                    <span id="priceCurrencySuffix" style="position: absolute; right: 12px; font-weight: 700; font-size: 13px; color: var(--text-3); user-select: none; pointer-events: none;">VND</span>
+                    <input type="hidden" name="price" id="priceHiddenInput" value="30.000VND">
+                  </div>
+                </div>
+              </div>
+            </div><!-- /section 3 (FIXED) -->
+
+            <div class="progress-wrap" id="progressWrap" style="text-align: center;">
+              <div style="position:relative; width: 80px; height: 80px; margin: 0 auto 12px;">
+                <svg width="80" height="80" viewBox="0 0 100 100" style="transform: rotate(-90deg);">
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="var(--border)" stroke-width="8"></circle>
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gold)" stroke-width="8"
+                    stroke-dasharray="283" stroke-dashoffset="283" id="loadingCircle"
+                    style="transition: stroke-dashoffset 0.5s ease; stroke-linecap: round;"></circle>
+                </svg>
+                <div id="loadingPercent"
+                  style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-weight:700; font-size:16px; color:var(--text-1);">
+                  0%</div>
+              </div>
+              <div id="loadingText" style="font-size:14px; color:var(--text-2); font-weight:600;" data-i18n="Initializing...">Initializing...
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn" onclick="console.log('[JS] Submit button clicked')">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+              <span data-i18n="GENERATE PDF MAGAZINE">GENERATE PDF MAGAZINE</span>
+            </button>
+
+          </form>
+        </div><!-- /left-column -->
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+          {% if pdf_url %}
+          <div class="result-card"
+            style="background:#0C2218; border:1.5px solid #1A5038; border-radius:20px; padding:32px 24px; text-align:center; margin-bottom:24px;">
+            <div class="result-title"
+              style="color:#5FD99A; font-weight:800; font-size:20px; margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:10px;" data-i18n="Generation Successful!">
+              <i class="fas fa-check-circle"></i> Generation Successful!
+            </div>
+            <div class="result-sub" style="color:#A3E6BF; font-size:14px; margin-bottom:28px; opacity:0.9;" data-i18n="Magazine PDF is ready">Magazine PDF
+              is ready</div>
+
+            <a href="{{ pdf_url }}" download class="btn-premium-green"
+              style="display:flex; align-items:center; justify-content:center; gap:12px; background:#5FD99A; color:#0C2218; text-decoration:none; padding:16px; border-radius:14px; font-weight:900; font-size:15px; margin-bottom:12px; border:none; width:100%;" data-i18n="Download PDF">
+              <i class="fas fa-arrow-down"></i> Download PDF
+            </a>
+
+            <a href="{{ url_for('view_flipbook', filename=pdf_url.split('/')[-1]) }}" target="_blank" class="btn-premium-gold"
+              style="display:flex; align-items:center; justify-content:center; gap:12px; background:#C9A84C; color:#18160F; text-decoration:none; padding:16px; border-radius:14px; font-weight:900; font-size:15px; margin-bottom:12px; border:none; width:100%;" data-i18n="View Flipbook">
+              <i class="fas fa-book-open"></i> View Flipbook
+            </a>
+
+            <a href="{{ pdf_url }}" target="_blank" class="btn-premium-outline"
+              style="display:flex; align-items:center; justify-content:center; gap:12px; background:transparent; color:#5FD99A; text-decoration:none; padding:14px; border-radius:14px; font-weight:700; font-size:14px; border:1px solid #1A5038; width:100%;" data-i18n="View Online">
+              <i class="fas fa-eye"></i> View Online
+            </a>
+          </div>
+          {% endif %}
+
+          <div class="sidebar-card">
+            <h3 data-i18n="Upload PDF to View">📄 Upload PDF to View</h3>
+            <p style="font-size: 13px; color: var(--text-2); margin-bottom: 12px;" data-i18n="Upload the magazine PDF you downloaded to view it as a flipbook.">Upload the magazine PDF you
+              downloaded to view it as a flipbook.</p>
+            <form action="{{ url_for('upload_pdf') }}" method="POST" enctype="multipart/form-data"
+              style="display:flex; flex-direction:column; gap:10px;">
+              <div class="file-drop" id="pdfDropZone" style="padding: 20px 10px; margin-bottom: 0;">
+                <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf" required>
+                <div class="file-drop-icon" style="width: 36px; height: 36px; margin: 0 auto 8px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14,2 14,8 20,8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                </div>
+                <div class="file-drop-title" style="font-size: 13px;" data-i18n="Select or drag & drop PDF">Select or drag & drop PDF</div>
+                <div id="pdfBadge"
+                  style="display:none; font-size: 11px; margin-top: 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                  class="file-badge">
+                  <svg viewBox="0 0 12 12" fill="none" style="flex-shrink: 0;">
+                    <path d="M2 2h5l3 3v5a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor"
+                      stroke-width="1.2" />
+                  </svg>
+                  <span id="pdfFileName" style="overflow: hidden; text-overflow: ellipsis;"></span>
+                </div>
+              </div>
+              <button type="submit" class="btn-submit"
+                style="height: 38px; font-size: 12px; margin-top: 0; background: var(--gold); color: #18160F; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span data-i18n="UPLOAD & VIEW">UPLOAD & VIEW</span>
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+      </div><!-- /page-body -->
+    </div><!-- /page-inner -->
+  </div><!-- /page-wrapper -->
+
+{% endblock %}
+
+{% block extra_js %}
+  <!-- Flipbook Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://unpkg.com/page-flip/dist/js/page-flip.browser.js"></script>
+
+  <script>
+    console.log("[JS] Script initialized");
+
+    function switchDesignerTab(tabId) {
+      document.querySelectorAll('.designer-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelectorAll('.designer-tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+
+      const targetBtn = Array.from(document.querySelectorAll('.designer-tab-btn')).find(btn => {
+        return btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tabId + "'");
+      });
+      if (targetBtn) targetBtn.classList.add('active');
+
+      const targetContent = document.getElementById('tab-' + tabId);
+      if (targetContent) targetContent.classList.add('active');
+
+      if (typeof reportHeight === 'function') {
+        reportHeight();
+      }
+    }
+
+    function switchStylePanel(elementId) {
+      document.querySelectorAll('.style-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      const targetPanel = document.getElementById('panel-' + elementId);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+      if (typeof reportHeight === 'function') {
+        reportHeight();
+      }
+    }
+
+    function selectStyleElement(val, el) {
+      const label = document.getElementById('styleElementActiveLabel');
+      if (label) {
+        label.textContent = el.textContent;
+        label.setAttribute('data-i18n', el.getAttribute('data-i18n'));
+      }
+      const select = document.getElementById('styleElementSelect');
+      if (select) {
+        select.value = val;
+      }
+      switchStylePanel(val);
+      const menu = document.querySelector('#styleElementDropdown .dropdown-menu');
+      if (menu) {
+        menu.classList.remove('active');
+      }
+      const items = document.querySelectorAll('#styleElementDropdown .dropdown-item');
+      items.forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // Listen for theme changes to re-render cover
+    const themeObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === "attributes" && mutation.attributeName === "data-theme") {
+                if (typeof renderCover === 'function') renderCover();
+            }
+        });
+    });
+    themeObserver.observe(document.documentElement, { attributes: true });
+
+    function selectTemplate(card) {
+      document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      const key = card.dataset.key;
+      document.getElementById('templateInput').value = key;
+
+      // Tự động đổi tên tạp chí thành tên phong cách nếu user dùng tên mặc định
+      const titleInput = document.getElementById('magazineTitle');
+      const defaultTitles = ["VOGUE", "MINIMALISM", "MINIMAL", "SCIENCE", "ART", "BUSINESS"];
+      if (titleInput.value.trim() === "" || defaultTitles.includes(titleInput.value.trim().toUpperCase())) {
+        if (key === "MINIMAL") {
+          titleInput.value = "MINIMALISM";
+        } else {
+          titleInput.value = key;
+        }
+        if (typeof renderCover === "function") renderCover();
+      }
+    }
+
+    let bgDataUrls = [];
+    let bgDataUrlBack = null;
+    let coverLayout = 1;
+    let splitX = 0.5;
+    let splitY = 0.5;
+
+    function selectCoverLayout(val) {
+      document.querySelectorAll('.layout-opt').forEach(el => el.classList.remove('active'));
+      document.querySelector(`.layout-opt[data-val="${val}"]`).classList.add('active');
+      document.getElementById('coverLayout').value = val;
+      onLayoutChange();
+    }
+
+    function onLayoutChange() {
+      coverLayout = parseInt(document.getElementById('coverLayout').value) || 1;
+
+      // Update Grid UI
+      const grid = document.getElementById('layoutGrid');
+      grid.className = 'layout-grid layout-' + coverLayout;
+
+      document.getElementById('slotContainer1').style.display = coverLayout >= 2 ? 'flex' : 'none';
+      document.getElementById('slotContainer2').style.display = coverLayout >= 3 ? 'flex' : 'none';
+
+      updateGridResizers();
+      renderCover();
+    }
+
+    function updateGridResizers() {
+      const grid = document.getElementById('layoutGrid');
+      const rx = document.getElementById('gridResizerX');
+      const ry = document.getElementById('gridResizerY');
+
+      if (coverLayout === 2) {
+        grid.style.gridTemplateColumns = '1fr';
+        grid.style.gridTemplateRows = `${splitY}fr ${1 - splitY}fr`;
+        rx.style.display = 'none';
+        ry.style.display = 'block';
+        ry.style.top = `${splitY * 100}%`;
+        ry.style.left = '0';
+      } else if (coverLayout === 3) {
+        grid.style.gridTemplateColumns = `${splitX}fr ${1 - splitX}fr`;
+        grid.style.gridTemplateRows = `${splitY}fr ${1 - splitY}fr`;
+        rx.style.display = 'block';
+        rx.style.left = `${splitX * 100}%`;
+        ry.style.display = 'block';
+        ry.style.top = `${splitY * 100}%`;
+        ry.style.left = `${splitX * 100}%`;
+      } else {
+        grid.style.gridTemplateColumns = '1fr';
+        grid.style.gridTemplateRows = '1fr';
+        rx.style.display = 'none';
+        ry.style.display = 'none';
+      }
+    }
+
+    let gridDrag = { active: false, target: null };
+
+    document.getElementById('gridResizerX').addEventListener('mousedown', e => {
+      gridDrag.active = true; gridDrag.target = 'splitX';
+      e.preventDefault(); e.stopPropagation();
+    });
+    document.getElementById('gridResizerY').addEventListener('mousedown', e => {
+      gridDrag.active = true; gridDrag.target = 'splitY';
+      e.preventDefault(); e.stopPropagation();
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!gridDrag.active) return;
+      const grid = document.getElementById('layoutGrid');
+      const r = grid.getBoundingClientRect();
+      let xp = (e.clientX - r.left) / r.width;
+      let yp = (e.clientY - r.top) / r.height;
+      xp = Math.max(0.1, Math.min(0.9, xp));
+      yp = Math.max(0.1, Math.min(0.9, yp));
+
+      if (gridDrag.target === 'splitX') splitX = xp;
+      if (gridDrag.target === 'splitY') splitY = yp;
+
+      updateGridResizers();
+      renderCover();
+
+      // Disable text selection while dragging
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (gridDrag.active) {
+        gridDrag.active = false;
+        document.body.style.userSelect = '';
+      }
+    });
+
+    function handleSlotUpload(index, input) {
+      const file = input.files[0];
+      if (!file) return;
+      const r = new FileReader();
+      r.onload = ev => {
+        bgDataUrls[index] = ev.target.result;
+        const bgEl = document.getElementById('slotBg' + index);
+        bgEl.style.backgroundImage = `url(${ev.target.result})`;
+        bgEl.parentElement.classList.add('has-img');
+        renderCover();
+      };
+      r.readAsDataURL(file);
+    }
+
+    function handleBackCoverUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const r = new FileReader();
+      r.onload = ev => {
+        bgDataUrlBack = ev.target.result;
+        const bgEl = document.getElementById('backCoverBg');
+        bgEl.style.backgroundImage = `url(${ev.target.result})`;
+        bgEl.parentElement.classList.add('has-img');
+        renderCover();
+      };
+      r.readAsDataURL(file);
+    }
+
+    let textPos = { titleX: 50, titleY: 20, subX: 50, subY: 30, barcodeX: 85, barcodeY: 90, issnX: 85, issnY: 96, dateX: 15, dateY: 96 };
+    let barcodeData = { size: 40, code: '5901234123457' };
+    let issnData = { code: 'ISSN 1234-5678' };
+    let customTexts = [], customIdCtr = 0;
+    let textStyles = {
+      title: { color: '#333333', font: 'serif', bold: false, italic: false, size: 90 },
+      subtitle: { color: '#666666', font: 'sans-serif', bold: false, italic: false, size: 45 },
+      date: { color: '#666666', font: 'sans-serif', bold: false, italic: false, size: 25 }
+    };
+    let drag = { active: false, target: null, ox: 0, oy: 0 }, raf = null;
+
+    function renderCover() {
+      const canvas = document.getElementById('coverCanvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      const drawText = () => {
+        const tFont = `${textStyles.title.bold ? 'bold ' : ''}${textStyles.title.italic ? 'italic ' : ''}${W * (textStyles.title.size / 1000)}px ${textStyles.title.font}`;
+        ctx.save(); ctx.font = tFont; ctx.fillStyle = textStyles.title.color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText((document.getElementById('magazineTitle').value || 'VOGUE').toUpperCase(), (textPos.titleX / 100) * W, (textPos.titleY / 100) * H);
+        ctx.restore();
+        const sFont = `${textStyles.subtitle.bold ? 'bold ' : ''}${textStyles.subtitle.italic ? 'italic ' : ''}${W * (textStyles.subtitle.size / 1000)}px ${textStyles.subtitle.font}`;
+        ctx.save(); ctx.font = sFont; ctx.fillStyle = textStyles.subtitle.color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText((document.getElementById('magazineSubtitle').value || 'EDITORIAL ISSUE').toUpperCase(), (textPos.subX / 100) * W, (textPos.subY / 100) * H);
+        ctx.restore();
+
+        // Draw Pub Date
+        const dateStr = document.getElementById('pubDateInput').value;
+        if (dateStr) {
+          const dFont = `${textStyles.date.bold ? 'bold ' : ''}${textStyles.date.italic ? 'italic ' : ''}${W * (textStyles.date.size / 1000)}px ${textStyles.date.font}`;
+          ctx.save(); ctx.font = dFont; ctx.fillStyle = textStyles.date.color;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(dateStr.toUpperCase(), (textPos.dateX / 100) * W, (textPos.dateY / 100) * H);
+          ctx.restore();
+        }
+
+        // Draw Barcode
+        drawBarcode(ctx, (textPos.barcodeX / 100) * W, (textPos.barcodeY / 100) * H, (barcodeData.size * W / 480), barcodeData.code);
+
+        // Draw ISSN
+        if (issnData.code) {
+          ctx.save(); ctx.font = `${W * 0.02}px monospace`; ctx.fillStyle = '#000';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(issnData.code, (textPos.issnX / 100) * W, (textPos.issnY / 100) * H);
+          ctx.restore();
+        }
+
+        customTexts.forEach(t => {
+          const scaledSize = (t.size || 16) * (W / 480);
+          const fontStyle = `${t.bold ? 'bold ' : ''}${t.italic ? 'italic ' : ''}`;
+          ctx.save(); ctx.font = `${fontStyle}${scaledSize}px ${t.font || 'sans-serif'}`; ctx.fillStyle = t.color || '#444';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(t.content, (t.x / 100) * W, (t.y / 100) * H); ctx.restore();
+        });
+      };
+      const drawBackgrounds = () => {
+        if (bgDataUrls.length === 0) {
+          ctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'dark' ? '#252319' : '#F0EDE6';
+          ctx.fillRect(0, 0, W, H); drawText();
+          return;
+        }
+
+        let layout = coverLayout;
+        if (bgDataUrls.length === 1) layout = 1;
+        if (bgDataUrls.length === 2 && layout === 3) layout = 2;
+
+        let promises = bgDataUrls.map(url => {
+          return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.src = url;
+          });
+        });
+
+        Promise.all(promises).then(images => {
+          if (layout === 1 && images[0]) {
+            const img = images[0];
+            const ir = img.width / img.height, cr = W / H;
+            let sx, sy, sw, sh;
+            if (ir > cr) { sh = img.height; sw = sh * cr; sx = (img.width - sw) / 2; sy = 0; } else { sw = img.width; sh = sw / cr; sx = 0; sy = (img.height - sh) / 2; }
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+          } else if (layout === 2) {
+            const hPart = H * splitY;
+            if (images[0]) {
+              const img = images[0];
+              const ir = img.width / img.height, cr = W / hPart;
+              let sx, sy, sw, sh;
+              if (ir > cr) { sh = img.height; sw = sh * cr; sx = (img.width - sw) / 2; sy = 0; } else { sw = img.width; sh = sw / cr; sx = 0; sy = (img.height - sh) / 2; }
+              ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, hPart);
+            }
+            if (images[1]) {
+              const img = images[1];
+              const ir = img.width / img.height, cr = W / (H - hPart);
+              let sx, sy, sw, sh;
+              if (ir > cr) { sh = img.height; sw = sh * cr; sx = (img.width - sw) / 2; sy = 0; } else { sw = img.width; sh = sw / cr; sx = 0; sy = (img.height - sh) / 2; }
+              ctx.drawImage(img, sx, sy, sw, sh, 0, hPart, W, H - hPart);
+            }
+          } else if (layout === 3) {
+            const wPart = W * splitX;
+            const hPart = H * splitY;
+            if (images[0]) {
+              const img = images[0];
+              const ir = img.width / img.height, cr = wPart / H;
+              let sx, sy, sw, sh;
+              if (ir > cr) { sh = img.height; sw = sh * cr; sx = (img.width - sw) / 2; sy = 0; } else { sw = img.width; sh = sw / cr; sx = 0; sy = (img.height - sh) / 2; }
+              ctx.drawImage(img, sx, sy, sw, sh, 0, 0, wPart, H);
+            }
+            if (images[1]) {
+              const img = images[1];
+              const ir = img.width / img.height, cr = (W - wPart) / hPart;
+              let sx, sy, sw, sh;
+              if (ir > cr) { sh = img.height; sw = sh * cr; sx = (img.width - sw) / 2; sy = 0; } else { sw = img.width; sh = sw / cr; sx = 0; sy = (img.height - sh) / 2; }
+              ctx.drawImage(img, sx, sy, sw, sh, wPart, 0, W - wPart, hPart);
+            }
+            if (images[2]) {
+              const img = images[2];
+              const ir = img.width / img.height, cr = (W - wPart) / (H - hPart);
+              let sx, sy, sw, sh;
+              if (ir > cr) { sh = img.height; sw = sh * cr; sx = (img.width - sw) / 2; sy = 0; } else { sw = img.width; sh = sw / cr; sx = 0; sy = (img.height - sh) / 2; }
+              ctx.drawImage(img, sx, sy, sw, sh, wPart, hPart, W - wPart, H - hPart);
+            }
+          }
+          // Vẽ đường viền ngăn cách
+          if (layout === 2) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, H * splitY - 2, W, 4);
+          } else if (layout === 3) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(W * splitX - 2, 0, 4, H); // dọc
+            ctx.fillRect(W * splitX, H * splitY - 2, W - W * splitX, 4); // ngang phải
+          }
+          drawText();
+        });
+      };
+      drawBackgrounds();
+      
+      // Render Back Cover
+      const backCanvas = document.getElementById('backCoverCanvas');
+      if (backCanvas) {
+        const bctx = backCanvas.getContext('2d');
+        const bW = backCanvas.width, bH = backCanvas.height;
+        bctx.clearRect(0, 0, bW, bH);
+        
+        if (bgDataUrlBack) {
+          const bimg = new Image();
+          bimg.onload = () => {
+            const ir = bimg.width / bimg.height, cr = bW / bH;
+            let sx, sy, sw, sh;
+            if (ir > cr) { sh = bimg.height; sw = sh * cr; sx = (bimg.width - sw) / 2; sy = 0; } 
+            else { sw = bimg.width; sh = sw / cr; sx = 0; sy = (bimg.height - sh) / 2; }
+            bctx.drawImage(bimg, sx, sy, sw, sh, 0, 0, bW, bH);
+          };
+          bimg.src = bgDataUrlBack;
+        } else {
+          bctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'dark' ? '#252319' : '#F0EDE6';
+          bctx.fillRect(0, 0, bW, bH);
+          bctx.fillStyle = '#888';
+          bctx.font = `${bW * 0.05}px sans-serif`;
+          bctx.textAlign = 'center';
+          const backText = (localStorage.getItem('lang') || 'en') === 'vi' ? 'BÌA SAU' : 'BACK COVER';
+          bctx.fillText(backText, bW / 2, bH / 2);
+        }
+      }
+    }
+
+    const cvs = document.getElementById('coverCanvas');
+    function getHit(cx, cy) {
+      const W = cvs.width, H = cvs.height, HIT = 28 * (W / 480);
+      const tx = (textPos.titleX / 100) * W, ty = (textPos.titleY / 100) * H;
+      const sx = (textPos.subX / 100) * W, sy = (textPos.subY / 100) * H;
+      const bx = (textPos.barcodeX / 100) * W, by = (textPos.barcodeY / 100) * H;
+      const ix = (textPos.issnX / 100) * W, iy = (textPos.issnY / 100) * H;
+      const dx = (textPos.dateX / 100) * W, dy = (textPos.dateY / 100) * H;
+
+      if (Math.abs(cx - tx) < HIT * 3 && Math.abs(cy - ty) < HIT) return 'title';
+      if (Math.abs(cx - sx) < HIT * 3 && Math.abs(cy - sy) < HIT) return 'sub';
+      if (Math.abs(cx - bx) < HIT * 2 && Math.abs(cy - by) < HIT * 2) return 'barcode';
+      if (Math.abs(cx - ix) < HIT * 2 && Math.abs(cy - iy) < HIT) return 'issn';
+      if (Math.abs(cx - dx) < HIT * 2 && Math.abs(cy - dy) < HIT) return 'date';
+
+      for (let i = 0; i < customTexts.length; i++) { const t = customTexts[i]; const tx2 = (t.x / 100) * W, ty2 = (t.y / 100) * H; if (Math.abs(cx - tx2) < HIT * 2 && Math.abs(cy - ty2) < HIT) return 'custom_' + i; }
+
+      let currentLayout = parseInt(document.getElementById('coverLayout').value) || 1;
+      if (currentLayout === 2) {
+        if (Math.abs(cy - H * splitY) < HIT) return 'splitY';
+      } else if (currentLayout === 3) {
+        if (Math.abs(cx - W * splitX) < HIT && cy < H) return 'splitX';
+        if (cx > W * splitX && Math.abs(cy - H * splitY) < HIT) return 'splitY';
+      }
+      return null;
+    }
+    cvs.addEventListener('mousedown', e => {
+      const r = cvs.getBoundingClientRect();
+      const cx = (e.clientX - r.left) / r.width * cvs.width, cy = (e.clientY - r.top) / r.height * cvs.height;
+      const cpx = (e.clientX - r.left) / r.width * 100, cpy = (e.clientY - r.top) / r.height * 100;
+      const hit = getHit(cx, cy);
+      if (hit) {
+        drag.active = true; drag.target = hit;
+        if (hit === 'title') { drag.ox = cpx - textPos.titleX; drag.oy = cpy - textPos.titleY; cvs.style.cursor = 'grabbing'; }
+        else if (hit === 'sub') { drag.ox = cpx - textPos.subX; drag.oy = cpy - textPos.subY; cvs.style.cursor = 'grabbing'; }
+        else if (hit === 'barcode') { drag.ox = cpx - textPos.barcodeX; drag.oy = cpy - textPos.barcodeY; cvs.style.cursor = 'grabbing'; }
+        else if (hit === 'issn') { drag.ox = cpx - textPos.issnX; drag.oy = cpy - textPos.issnY; cvs.style.cursor = 'grabbing'; }
+        else if (hit === 'date') { drag.ox = cpx - textPos.dateX; drag.oy = cpy - textPos.dateY; cvs.style.cursor = 'grabbing'; }
+        else if (hit === 'splitX' || hit === 'splitY') {
+          cvs.style.cursor = hit === 'splitX' ? 'col-resize' : 'row-resize';
+        }
+        else { const i = parseInt(hit.split('_')[1]); drag.ox = cpx - customTexts[i].x; drag.oy = cpy - customTexts[i].y; cvs.style.cursor = 'grabbing'; }
+        e.preventDefault();
+      }
+    });
+    cvs.addEventListener('mousemove', e => {
+      const r = cvs.getBoundingClientRect();
+      const xp = (e.clientX - r.left) / r.width * 100, yp = (e.clientY - r.top) / r.height * 100;
+      if (!drag.active) {
+        const cx = (e.clientX - r.left) / r.width * cvs.width, cy = (e.clientY - r.top) / r.height * cvs.height;
+        const hit = getHit(cx, cy);
+        if (hit === 'splitX') cvs.style.cursor = 'col-resize';
+        else if (hit === 'splitY') cvs.style.cursor = 'row-resize';
+        else cvs.style.cursor = hit ? 'grab' : 'default';
+        return;
+      }
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const nx = Math.max(5, Math.min(95, xp - drag.ox)), ny = Math.max(5, Math.min(95, yp - drag.oy));
+        if (drag.target === 'title') { textPos.titleX = nx; textPos.titleY = ny; }
+        else if (drag.target === 'sub') { textPos.subX = nx; textPos.subY = ny; }
+        else if (drag.target === 'barcode') { textPos.barcodeX = nx; textPos.barcodeY = ny; }
+        else if (drag.target === 'issn') { textPos.issnX = nx; textPos.issnY = ny; }
+        else if (drag.target === 'date') { textPos.dateX = nx; textPos.dateY = ny; }
+        else if (drag.target === 'splitX') {
+          splitX = Math.max(0.1, Math.min(0.9, xp / 100));
+        } else if (drag.target === 'splitY') {
+          splitY = Math.max(0.1, Math.min(0.9, yp / 100));
+        }
+        else { const i = parseInt(drag.target.split('_')[1]); customTexts[i].x = nx; customTexts[i].y = ny; }
+        renderCover();
+      });
+    });
+    ['mouseup', 'mouseleave'].forEach(ev => cvs.addEventListener(ev, () => { drag.active = false; cvs.style.cursor = 'default'; }));
+    cvs.addEventListener('touchstart', e => { const t = e.touches[0]; cvs.dispatchEvent(new MouseEvent('mousedown', { clientX: t.clientX, clientY: t.clientY })); e.preventDefault(); }, { passive: false });
+    cvs.addEventListener('touchmove', e => { const t = e.touches[0]; cvs.dispatchEvent(new MouseEvent('mousemove', { clientX: t.clientX, clientY: t.clientY })); e.preventDefault(); }, { passive: false });
+    cvs.addEventListener('touchend', e => { cvs.dispatchEvent(new MouseEvent('mouseup', {})); e.preventDefault(); }, { passive: false });
+
+    function formatPriceInput(lang) {
+      const displayInput = document.getElementById('priceDisplayInput');
+      const suffixSpan = document.getElementById('priceCurrencySuffix');
+      const hiddenInput = document.getElementById('priceHiddenInput');
+      if (!displayInput || !suffixSpan || !hiddenInput) return;
+
+      let val = displayInput.value.trim();
+      let currentCurrency = suffixSpan.textContent.trim();
+
+      let numericVal = parseFloat(val.replace(/\./g, '').replace(/,/g, '.')) || 0;
+
+      if (lang === 'vi') {
+        if (currentCurrency === 'USD') {
+          numericVal = Math.round(numericVal * 25000);
+        }
+        suffixSpan.textContent = 'VND';
+        displayInput.value = numericVal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        hiddenInput.value = displayInput.value + "VND";
+      } else {
+        if (currentCurrency === 'VND') {
+          numericVal = parseFloat((numericVal / 25000).toFixed(2));
+        }
+        suffixSpan.textContent = 'USD';
+        
+        const usdStr = numericVal.toFixed(2);
+        const parts = usdStr.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        displayInput.value = parts.join('.');
+        hiddenInput.value = displayInput.value + "USD";
+      }
+    }
+
+    window.onLanguageChanged = function(lang) {
+      // Đồng bộ hóa chữ phụ mặc định trên Canvas nếu người dùng chưa tự ý chỉnh sửa
+      const subInput = document.getElementById('magazineSubtitle');
+      if (subInput) {
+        if (lang === 'vi') {
+          if (subInput.value === 'EDITORIAL ISSUE' || subInput.value === '') {
+            subInput.value = 'ẤN PHẨM BIÊN TẬP';
+          }
+        } else {
+          if (subInput.value === 'ẤN PHẨM BIÊN TẬP' || subInput.value === '') {
+            subInput.value = 'EDITORIAL ISSUE';
+          }
+        }
+      }
+
+      // Tự động chuyển đổi ngôn ngữ Ngày xuất bản
+      const dateInput = document.getElementById('pubDateInput');
+      if (dateInput && dateInput.value.trim() !== '') {
+        const monthsVi = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+        const monthsEn = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        let dateStr = dateInput.value;
+
+        if (lang === 'vi') {
+          // Dịch từ tiếng Anh sang tiếng Việt
+          for (let i = 0; i < 12; i++) {
+            const enPattern = new RegExp(`(\\d+)?\\s*${monthsEn[i]}\\s*,?\\s*(\\d+)?`, 'i');
+            const match = dateStr.match(enPattern);
+            if (match) {
+              const day = match[1] ? match[1] + " " : "";
+              const year = match[2] ? ", " + match[2] : "";
+              dateInput.value = dateStr.replace(enPattern, `${day}Tháng ${i + 1}${year}`);
+              break;
+            }
+          }
+        } else {
+          // Dịch từ tiếng Việt sang tiếng Anh
+          for (let i = 1; i <= 12; i++) {
+            const viPattern = new RegExp(`(\\d+)?\\s*tháng\\s*${i}\\s*,?\\s*(\\d+)?`, 'i');
+            const match = dateStr.match(viPattern);
+            if (match) {
+              const day = match[1] ? match[1] + " " : "";
+              const year = match[2] ? " " + match[2] : "";
+              dateInput.value = dateStr.replace(viPattern, `${day}${monthsEn[i - 1]}${year}`);
+              break;
+            }
+          }
+        }
+      }
+
+      // Đồng bộ hóa ô giá bìa
+      formatPriceInput(lang);
+
+      // Vẽ lại canvas để cập ngữ ngôn ngữ chữ mặc định
+      renderCover();
+
+      // Render lại danh sách file để đồng bộ ngôn ngữ ngay lập tức
+      if (typeof renderFileList === 'function') {
+        renderFileList();
+      }
+    };
+
+    function updSlider(id, val, spanId) { const el = document.getElementById(id); if (el) el.value = val; const sp = document.getElementById(spanId); if (sp) sp.textContent = Math.round(val) + '%'; }
+
+    function toggleDropdown(id) {
+      const container = document.getElementById(id);
+      const menu = container.querySelector('.dropdown-menu');
+      
+      if (menu.classList.contains('active')) {
+        menu.classList.remove('active');
+        try {
+          if (window.parent) window.parent.isHoveringDropdown = false;
+        } catch (e) {}
+        return;
+      }
+
+      // Close others
+      document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('active'));
+
+      // Calculate space below to determine drop direction (up or down)
+      const rect = container.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 190 && id !== 'styleElementDropdown') {
+        container.classList.add('drop-up');
+      } else {
+        container.classList.remove('drop-up');
+      }
+
+      menu.classList.add('active');
+      if (window.event) window.event.stopPropagation();
+      
+      // Hàm đóng dropdown đồng bộ và dọn dẹp event listeners để tránh rò rỉ bộ nhớ
+      const closeDropdown = () => {
+        menu.classList.remove('active');
+        try {
+          if (window.parent) window.parent.isHoveringDropdown = false;
+        } catch (e) {}
+        window.removeEventListener('scroll', closeOnScroll, true);
+        document.removeEventListener('click', closeOnOutside);
+        document.removeEventListener('touchstart', closeOnOutside);
+      };
+
+      const closeOnScroll = () => {
+        closeDropdown();
+      };
+      
+      const closeOnOutside = (e) => {
+        if (!container.contains(e.target)) {
+          closeDropdown();
+        }
+      };
+
+      // Trì hoãn đăng ký event 150ms để tránh xung đột với cử chỉ tap/micro-scroll trên mobile và Flutter WebViews
+      setTimeout(() => {
+        if (menu.classList.contains('active')) {
+          window.addEventListener('scroll', closeOnScroll, true);
+          document.addEventListener('click', closeOnOutside);
+          document.addEventListener('touchstart', closeOnOutside);
+        }
+      }, 150);
+
+      // Lắng nghe di chuột vào/ra menu để tạm dừng scroll proxy của trang cha
+      if (!menu.dataset.hoverBound) {
+        menu.dataset.hoverBound = "true";
+        menu.addEventListener('mouseenter', () => {
+          try {
+            if (window.parent) window.parent.isHoveringDropdown = true;
+          } catch (e) {}
+        });
+        menu.addEventListener('mouseleave', () => {
+          try {
+            if (window.parent) window.parent.isHoveringDropdown = false;
+          } catch (e) {}
+        });
+      }
+    }
+
+    function pickFont(el, font, label) {
+      textStyles[el].font = font;
+      const labelEl = document.getElementById(el + 'FontLabel');
+      if (labelEl) {
+        labelEl.textContent = label;
+        const fontMap = {
+          'serif': "'Playfair Display', serif",
+          'sans-serif': "'Plus Jakarta Sans', sans-serif",
+          'Georgia': "Georgia, serif",
+          'Arial': "Arial, sans-serif",
+          'monospace': "monospace"
+        };
+        labelEl.style.fontFamily = fontMap[font] || 'inherit';
+      }
+      const menu = document.querySelector('#' + el + 'FontDropdown .dropdown-menu');
+      if (menu) menu.classList.remove('active');
+      renderCover();
+    }
+
+    function pickColor(el, color, dot) {
+      textStyles[el].color = color;
+      const palette = document.getElementById(el + 'ColorPalette');
+      if (palette) {
+        palette.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+        dot.classList.add('active');
+      }
+      renderCover();
+    }
+
+    function toggleStyle(el, prop) {
+      textStyles[el][prop] = !textStyles[el][prop];
+      const btn = document.getElementById(el + prop.charAt(0).toUpperCase() + prop.slice(1));
+      if (btn) btn.classList.toggle('active', textStyles[el][prop]);
+      renderCover();
+    }
+
+    function addCustomText() {
+      customTexts.push({ id: ++customIdCtr, content: 'Text ' + customIdCtr, x: 50, y: 50, color: '#000000', size: 18, font: 'sans-serif', bold: false, italic: false, showSettings: false });
+      renderCustomList(); renderCover();
+    }
+
+    function renderCustomList() {
+      const c = document.getElementById('customTextsList'); c.innerHTML = '';
+      const fonts = [
+        {val:'serif', lab:'Serif'},
+        {val:'sans-serif', lab:'Sans'},
+        {val:'Georgia', lab:'Georgia'},
+        {val:'Arial', lab:'Arial'},
+        {val:'monospace', lab:'Monospace'}
+      ];
+      const fontFamilies = {
+        'serif': "'Playfair Display', serif",
+        'sans-serif': "'Plus Jakarta Sans', sans-serif",
+        'Georgia': "Georgia, serif",
+        'Arial': "Arial, sans-serif",
+        'monospace': "monospace"
+      };
+      const colors = ['#000000', '#FFFFFF', '#B0232A', '#C9A84C', '#2A4B8D', '#666666'];
+      
+      customTexts.forEach((t, i) => {
+        const d = document.createElement('div'); d.className = 'custom-text-item';
+        d.style.setProperty('display', 'block', 'important');
+        d.style.setProperty('width', '100%', 'important');
+        d.style.boxSizing = 'border-box';
+        d.style.padding = '8px 10px';
+        d.style.borderRadius = '8px';
+        d.style.background = 'var(--surface-2)';
+        d.style.marginBottom = '8px';
+        
+        const clrHtml = colors.map(clr => `<div class="color-dot ${t.color===clr?'active':''}" style="background:${clr}; width:16px; height:16px; border-width:1.5px;" onclick="customTexts[${i}].color='${clr}';renderCustomList();renderCover();event.stopPropagation();"></div>`).join('');
+        
+        const dropdownId = `customFontDrop_${i}`;
+        const currentFontLab = fonts.find(f => f.val === t.font)?.lab || t.font;
+        const showSettings = t.showSettings || false;
+
+        d.innerHTML = `
+          <div style="display:flex; gap:6px; align-items:center; width:100%;">
+            <input type="text" value="${t.content}" oninput="customTexts[${i}].content=this.value;renderCover()" 
+              style="flex:1; height:28px; font-size:12px; background:var(--surface); border:1px solid var(--border); border-radius:4px; color:var(--text-1); padding:0 8px; outline:none;">
+            <button type="button" onclick="customTexts[${i}].showSettings=!customTexts[${i}].showSettings;renderCustomList();event.stopPropagation();" 
+              style="height:28px; width:28px; color:${showSettings?'var(--gold)':'var(--text-3)'}; background:none; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0;">
+              <i class="fas fa-cog" style="font-size:12px;"></i>
+            </button>
+            <button type="button" onclick="customTexts.splice(${i},1);renderCustomList();renderCover();" 
+              style="height:28px; width:28px; color:#EF4444; background:none; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0;">
+              <i class="fas fa-trash-alt" style="font-size:12px;"></i>
+            </button>
+          </div>
+          <div style="display:${showSettings?'flex':'none'}; flex-direction:column; gap:8px; border-top:1px dashed var(--border); padding-top:8px; margin-top:8px; align-items:center; width:100%;">
+            <div class="color-palette" style="gap:5px; padding:0; display:flex; flex-wrap:nowrap; justify-content:center; width:100%; box-sizing:border-box;">${clrHtml}</div>
+            <div style="display:flex; gap:5px; align-items:center; justify-content:center; width:100%; box-sizing:border-box;">
+              <button type="button" onclick="customTexts[${i}].bold=!customTexts[${i}].bold;renderCustomList();renderCover();" 
+                style="height:26px; width:26px; background:${t.bold?'var(--gold)':'var(--surface)'}; color:${t.bold?'#18160F':'var(--text-1)'}; border:1px solid var(--border); border-radius:4px; cursor:pointer; font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0;">B</button>
+              <button type="button" onclick="customTexts[${i}].italic=!customTexts[${i}].italic;renderCustomList();renderCover();" 
+                style="height:26px; width:26px; background:${t.italic?'var(--gold)':'var(--surface)'}; color:${t.italic?'#18160F':'var(--text-1)'}; border:1px solid var(--border); border-radius:4px; cursor:pointer; font-style:italic; font-size:11px; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0;">I</button>
+              <div class="custom-dropdown" id="${dropdownId}" style="width:75px; flex-shrink:0;">
+                <div class="dropdown-trigger" onclick="toggleDropdown('${dropdownId}')" style="height:26px; font-size:11px; padding:0 6px; border-radius:4px; font-family:${fontFamilies[t.font] || 'inherit'};">
+                  <span>${currentFontLab}</span>
+                  <i class="fas fa-chevron-down" style="font-size:8px;"></i>
+                </div>
+                <div class="dropdown-menu" style="border-radius:6px;">
+                  ${fonts.map(f => `<div class="dropdown-item" onclick="customTexts[${i}].font='${f.val}'; renderCustomList(); renderCover();" style="padding:6px 10px; font-size:11px; font-family:${fontFamilies[f.val] || 'inherit'};">${f.lab}</div>`).join('')}
+                </div>
+              </div>
+              <input type="number" value="${t.size}" min="8" max="120" oninput="customTexts[${i}].size=parseInt(this.value);renderCover()" 
+                style="height:26px; width:35px; background:var(--surface); border:1px solid var(--border); border-radius:4px; color:var(--text-1); text-align:center; font-weight:700; font-size:11px; outline:none; padding:0; flex-shrink:0;">
+            </div>
+          </div>
+        `;
+        c.appendChild(d);
+      });
+    }
+
+    let selectedFiles = [];
+    function handleWordFiles(filesList) {
+      const files = Array.from(filesList);
+      if (selectedFiles.length + files.length > 10) {
+        alert(t("Maximum 10 files allowed."));
+        return;
+      }
+      files.forEach(f => {
+        if (f.size > 30 * 1024 * 1024) {
+          alert(t("Tệp quá lớn (>30MB).").replace("Tệp", `"${f.name}"`));
+          return;
+        }
+        const fileItem = {
+          file: f,
+          id: Math.random().toString(36).substr(2, 9),
+          title: f.name.replace(/\.[^/.]+$/, ""),
+          author: "",
+          desc: ""
+        };
+        selectedFiles.push(fileItem);
+
+        // Gọi API để phân tích tác giả từ file Word
+        const formData = new FormData();
+        formData.append("file", f);
+        fetch("/api/extract-docx-metadata", {
+          method: "POST",
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.author) {
+            fileItem.desc = data.author + " : ";
+            renderFileList();
+          }
+        })
+        .catch(err => console.error("Lỗi trích xuất tác giả:", err));
+      });
+      renderFileList();
+    }
+
+    document.getElementById('wordFileInput').addEventListener('change', function(e) {
+      if (e.target.files.length === 0) return;
+      handleWordFiles(e.target.files);
+      e.target.value = '';
+    });
+
+    function renderFileList() {
+      const container = document.getElementById('wordFileList');
+      container.innerHTML = '';
+
+      if (selectedFiles.length === 0) {
+        container.innerHTML = `<div style="color:var(--text-3); font-style:italic; font-size:13px; text-align:center;">${t('Chưa có tệp nào được chọn')}</div>`;
+        return;
+      }
+
+      selectedFiles.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.style.padding = '15px';
+        div.style.marginBottom = '0';
+        div.style.display = 'block';
+        div.style.border = '1px solid var(--border)';
+        div.style.background = 'rgba(255,255,255,0.03)';
+
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:11px; color:var(--gold); font-weight:800; text-transform:uppercase; letter-spacing:1px;">${t('CHƯƠNG')} ${index + 1}</span>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="style-btn" onclick="moveFile(${index}, -1)" ${index === 0 ? 'disabled' : ''} title="${t('Di chuyển lên')}"><i class="fas fa-chevron-up"></i></button>
+              <button type="button" class="style-btn" onclick="moveFile(${index}, 1)" ${index === selectedFiles.length - 1 ? 'disabled' : ''} title="${t('Di chuyển xuống')}"><i class="fas fa-chevron-down"></i></button>
+              <button type="button" class="style-btn" onclick="removeFile(${index})" style="color:#ef4444;" title="${t('Xóa')}"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="font-size:10px; margin-bottom:4px;">${t('TIÊU ĐỀ CHƯƠNG')}</label>
+            <input type="text" class="form-input" style="height:38px; font-size:14px; font-weight:600;" 
+                   value="${item.title}" oninput="selectedFiles[${index}].title = this.value" placeholder="${t('Nhập tên chương...')}">
+          </div>
+          
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size:10px; margin-bottom:4px;">${t('THÔNG TIN CHI TIẾT (Định dạng: Tác giả : Nội dung)')}</label>
+            <textarea class="form-input" style="height:80px; font-size:13px; padding:10px; resize:none;" 
+                      oninput="selectedFiles[${index}].desc = this.value" placeholder="${t('Ví dụ: Nguyễn Văn A : Khám phá xu hướng thời trang 2025...')}">${item.desc}</textarea>
+          </div>
+          
+          <div style="font-size:10px; color:var(--text-3); margin-top:8px; display:flex; align-items:center; gap:5px;">
+            <i class="fas fa-file-word"></i> ${item.file.name}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function moveFile(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= selectedFiles.length) return;
+      const temp = selectedFiles[index];
+      selectedFiles[index] = selectedFiles[newIndex];
+      selectedFiles[newIndex] = temp;
+      renderFileList();
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      renderFileList();
+    }
+
+    document.getElementById('pdfFileInput').addEventListener('change', e => {
+      const f = e.target.files[0]; if (!f) return;
+      document.getElementById('pdfFileName').textContent = f.name;
+      document.getElementById('pdfBadge').style.display = 'flex';
+      document.querySelector('#pdfDropZone .file-drop-icon').style.display = 'none';
+      document.querySelector('#pdfDropZone .file-drop-title').style.display = 'none';
+    });
+
+    ['magazineTitle', 'magazineSubtitle', 'pubDateInput'].forEach(id => document.getElementById(id).addEventListener('input', renderCover));
+
+    function drawBarcode(ctx, x, y, size, code) {
+      const bw = size * 1.8;
+      const bh = size;
+      ctx.save();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(x - bw / 2, y - bh / 2, bw, bh);
+
+      ctx.fillStyle = '#000';
+      const padding = size * 0.1;
+      const barAreaW = bw - padding * 2;
+      const barAreaH = bh - padding * 3.5;
+
+      let curX = x - bw / 2 + padding;
+      const totalModules = 95;
+      const moduleW = barAreaW / totalModules;
+
+      for (let i = 0; i < totalModules; i++) {
+        const isGuard = (i < 3 || (i > 45 && i < 50) || i > 91);
+        const digitIdx = Math.floor(i / 8);
+        const digit = parseInt(code[digitIdx % code.length]) || 0;
+        const active = ((i + digit) * 17) % 31 < 18;
+
+        if (active) {
+          ctx.fillRect(curX, y - bh / 2 + padding, moduleW * 1.1, isGuard ? barAreaH + padding * 1.5 : barAreaH);
+        }
+        curX += moduleW;
+      }
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.font = `bold ${size * 0.2}px monospace`;
+      ctx.fillText(code, x, y + bh / 2 - padding / 2);
+
+      ctx.restore();
+    }
+
+    function randomBarcode() {
+      const r = () => Math.floor(Math.random() * 10);
+      barcodeData.code = '' + r() + r() + r() + r() + r() + r() + r() + r() + r() + r() + r() + r() + r();
+      issnData.code = 'ISSN ' + r() + r() + r() + r() + '-' + r() + r() + r() + r();
+      document.getElementById('issnInput').value = issnData.code;
+      renderCover();
+    }
+
+    function autoDate() {
+      const lang = localStorage.getItem('lang') || 'en';
+      const now = new Date();
+      let str = "";
+      if (lang === 'vi') {
+        str = now.getDate() + " Tháng " + (now.getMonth() + 1) + ", " + now.getFullYear();
+      } else {
+        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        str = now.getDate() + " " + months[now.getMonth()] + " " + now.getFullYear();
+      }
+      document.getElementById('pubDateInput').value = str;
+      renderCover();
+    }
+    ['wordDropZone', 'pdfDropZone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragging'); });
+        el.addEventListener('dragleave', () => el.classList.remove('dragging'));
+        el.addEventListener('drop', e => {
+          e.preventDefault();
+          el.classList.remove('dragging');
+          if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+            if (id === 'wordDropZone') {
+              handleWordFiles(e.dataTransfer.files);
+            } else if (id === 'pdfDropZone') {
+              const fileInput = document.getElementById('pdfFileInput');
+              if (fileInput) {
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change'));
+              }
+            }
+          }
+        });
+      }
+    });
+
+    document.getElementById('mainForm').addEventListener('submit', async (e) => {
+      console.log("[JS] Form submit event caught");
+      e.preventDefault();
+      if (selectedFiles.length === 0) {
+        alert(t("Please upload at least 1 Word file."));
+        return;
+      }
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      formData.delete('files');
+
+      selectedFiles.forEach((item, i) => {
+        formData.append('files', item.file);
+        formData.append('chapter_titles', item.title);
+        formData.append('chapter_descs', item.desc);
+      });
+
+      console.log("[JS] Đang đóng gói dữ liệu hình ảnh (Base64)...");
+      const coverCanvas = document.getElementById('coverCanvas');
+      // Tối ưu mạnh chất lượng ảnh xuống 0.4 để tránh lỗi nghẽn cổ chai Base64 trên Local
+      formData.set('cover_base64', coverCanvas.toDataURL('image/jpeg', 0.4));
+
+      const backCanvas = document.getElementById('backCoverCanvas');
+      if (backCanvas) {
+        formData.set('back_cover_base64', backCanvas.toDataURL('image/jpeg', 0.4));
+      }
+      console.log("[JS] Hoàn tất đóng gói dữ liệu, chuẩn bị gửi Fetch...");
+
+      const pw = document.getElementById('progressWrap'), btn = document.getElementById('submitBtn');
+      pw.style.display = 'block'; btn.disabled = true;
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg> Processing...';
+
+      const circle = document.getElementById('loadingCircle');
+      const percentText = document.getElementById('loadingPercent');
+      const statusText = document.getElementById('loadingText');
+
+      const steps = [
+        { txt: t('Reading Word files...'), p: 20, d: 600 },
+        { txt: t('AI analyzing chapters...'), p: 50, d: 2200 },
+        { txt: t('Generating Table of Contents...'), p: 70, d: 3500 },
+        { txt: t('Laying out articles...'), p: 85, d: 5000 },
+        { txt: t('Rendering final PDF...'), p: 98, d: 7500 }
+      ];
+
+      steps.forEach(({ txt, p, d }) => setTimeout(() => {
+        const offset = 283 - (283 * p / 100);
+        circle.style.strokeDashoffset = offset;
+        percentText.textContent = p + '%';
+        statusText.textContent = txt;
+      }, d));
+
+      function resetUI() {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          GENERATE PDF MAGAZINE
+        `;
+        pw.style.display = 'none';
+      }
+
+      // Thực hiện gửi form bằng fetch thay vì submit truyền thống để kiểm soát tốt hơn
+      try {
+        console.log("[JS] Bắt đầu gọi fetch() lên:", window.location.href);
+        const response = await fetch(window.location.href, {
+          method: 'POST',
+          body: formData
+        });
+        console.log("[JS] fetch() trả về mã trạng thái:", response.status);
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.status === 'pending') {
+            const jobId = result.job_id;
+            console.log("[POLLING] Started for job:", jobId);
+
+            // Polling loop
+            const pollInterval = setInterval(async () => {
+              try {
+                const statusRes = await fetch(`/api/job-status/${jobId}`);
+                if (!statusRes.ok) return;
+                const statusData = await statusRes.json();
+
+                if (statusData.status === 'done') {
+                  clearInterval(pollInterval);
+                  circle.style.strokeDashoffset = 0;
+                  percentText.textContent = '100%';
+                  statusText.textContent = t('Success! Redirecting...');
+                  setTimeout(() => {
+                    window.location.href = `/editor?pdf_url=${encodeURIComponent(statusData.pdf_url)}`;
+                  }, 1000);
+                } else if (statusData.status === 'error') {
+                  clearInterval(pollInterval);
+                  alert(t("Magazine generation error: ") + t(statusData.message || "Unknown error"));
+                  resetUI();
+                }
+              } catch (pollErr) {
+                console.error("[POLLING ERROR]", pollErr);
+              }
+            }, 3000);
+          }
+        } else {
+          const errorJson = await response.json().catch(() => ({}));
+          alert(t("Initialization error: ") + t(errorJson.message || "Server Error"));
+          resetUI();
+        }
+      } catch (err) {
+        console.error(err);
+        alert(t("Server connection error."));
+        resetUI();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      autoDate();
+      randomBarcode();
+      
+      // Initialize font families for trigger buttons on load
+      const fontMap = {
+        'serif': "'Playfair Display', serif",
+        'sans-serif': "'Plus Jakarta Sans', sans-serif",
+        'Georgia': "Georgia, serif",
+        'Arial': "Arial, sans-serif",
+        'monospace': "monospace"
+      };
+      ['title', 'subtitle', 'date'].forEach(key => {
+        const labelEl = document.getElementById(key + 'FontLabel');
+        if (labelEl) {
+          labelEl.style.fontFamily = fontMap[textStyles[key].font] || 'inherit';
+        }
+      });
+
+      // Đăng ký sự kiện format price
+      const priceDisplayInput = document.getElementById('priceDisplayInput');
+      if (priceDisplayInput) {
+        priceDisplayInput.addEventListener('input', function() {
+          let val = this.value;
+          const suffix = document.getElementById('priceCurrencySuffix').textContent.trim();
+          const hiddenInput = document.getElementById('priceHiddenInput');
+          let cleanVal = val.replace(/[^0-9.,]/g, '');
+          
+          if (suffix === 'VND') {
+            let num = cleanVal.replace(/[^0-9]/g, '');
+            this.value = num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+          } else {
+            let formatted = cleanVal.replace(/,/g, '.');
+            const dotIndex = formatted.indexOf('.');
+            if (dotIndex !== -1) {
+              formatted = formatted.substring(0, dotIndex + 1) + formatted.substring(dotIndex + 1).replace(/\./g, '');
+            }
+            this.value = formatted;
+          }
+          hiddenInput.value = this.value + suffix;
+        });
+
+        priceDisplayInput.addEventListener('blur', () => {
+          const currentLang = localStorage.getItem('lang') || 'en';
+          formatPriceInput(currentLang);
+        });
+      }
+
+      renderCover();
+    });
+
+    let deleteFormToSubmit = null;
+    function openDeleteConfirm(event, form) {
+      event.preventDefault();
+      deleteFormToSubmit = form;
+      document.getElementById('confirmDeleteModal').style.display = 'flex';
+      return false;
+    }
+    function closeDeleteConfirm() {
+      deleteFormToSubmit = null;
+      document.getElementById('confirmDeleteModal').style.display = 'none';
+    }
+    async function executeDelete() {
+      if (!deleteFormToSubmit) return;
+      const url = deleteFormToSubmit.action;
+      const form = deleteFormToSubmit;
+      closeDeleteConfirm();
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          const item = form.closest('.history-item');
+          if (item) item.remove();
+
+          const list = document.getElementById('historyListContainer');
+          if (list && list.children.length === 0) {
+            list.parentElement.innerHTML = '<div style="text-align: center; padding: 40px 0; color: var(--text-3); font-style: italic;">You haven\'t created any magazines yet.</div>';
+          }
+        } else {
+          alert(data.message || 'Delete failed');
+        }
+      } catch (e) {
+        alert('Connection error during deletion.');
+      }
+    }
+  </script>
+
+  </div>
+
+  <!-- DELETE CONFIRM MODAL -->
+  <div id="confirmDeleteModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding: 20px;">
+    <div
+      style="background:var(--surface); width:100%; max-width:320px; border-radius:var(--radius-md); box-shadow:var(--shadow-lg); overflow:hidden; border: 1px solid var(--border); padding: 24px; text-align: center;">
+      <div
+        style="width: 48px; height: 48px; border-radius: 50%; background: rgba(239, 68, 68, 0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px;">
+        🗑</div>
+      <h4
+        style="font-family:'Playfair Display', serif; font-size:18px; color:var(--text-1); font-weight: 700; margin-bottom: 8px;">
+        Confirm Delete</h4>
+      <p style="font-size: 13px; color: var(--text-2); margin-bottom: 24px; line-height: 1.5;">Are you sure you want to
+        delete
+        this history? The PDF file will also be deleted from the system.</p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button onclick="closeDeleteConfirm()"
+          style="flex: 1; padding: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-1); cursor: pointer; font-size: 13px; font-weight: 600; border-radius: 6px; transition: 0.2s;"
+          onmouseover="this.style.background='var(--border)'"
+          onmouseout="this.style.background='var(--surface-2)'">Cancel</button>
+        <button onclick="executeDelete()"
+          style="flex: 1; padding: 10px; border: none; background: #ef4444; color: #fff; cursor: pointer; font-size: 13px; font-weight: 600; border-radius: 6px; transition: 0.2s;"
+          onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">Delete</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}

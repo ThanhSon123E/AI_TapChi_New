@@ -1,0 +1,560 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng Nhập — AI Magazine Creator{% endblock %}
+
+{% block extra_css %}
+<style>
+    body { background: var(--bg); overflow-x: hidden; }
+    
+    .auth-container {
+      min-height: calc(100vh - 64px); 
+      display: grid; 
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+
+    @media (max-width: 992px) {
+      .auth-container { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { padding: 3rem 1.5rem; }
+    }
+
+    /* ── LEFT PANEL — PREMIUM ART GALLERY VIEW ── */
+    .left-panel {
+      position: relative; 
+      overflow: hidden;
+      background-color: #080B11;
+      background-image: linear-gradient(135deg, rgba(8, 11, 17, 0.45) 20%, rgba(8, 11, 17, 0.85) 80%), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1000');
+      background-size: cover;
+      background-position: center;
+      display: flex; 
+      flex-direction: column;
+      justify-content: space-between; 
+      padding: 4rem;
+      box-sizing: border-box;
+    }
+
+    /* Floating Grid overlay */
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Glassmorphic Magazine Page Mockup */
+    .magazine-mockup-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      perspective: 1000px;
+      z-index: 2;
+    }
+
+    .magazine-page-glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 
+          0 35px 70px rgba(0,0,0,0.6), 
+          inset 0 1px 0 rgba(255,255,255,0.1),
+          0 0 30px rgba(201, 168, 76, 0.03);
+      transform: rotateY(-6deg) rotateX(2deg);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .magazine-mockup-wrapper:hover .magazine-page-glass {
+      transform: rotateY(0deg) rotateX(0deg) translateY(-6px);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 
+          0 40px 80px rgba(0,0,0,0.7), 
+          0 0 40px rgba(201, 168, 76, 0.1);
+    }
+
+    /* Page interior details */
+    .mock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+      margin-bottom: 22px;
+    }
+
+    .mock-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1.25;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .mock-title span {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .mock-subtitle {
+      font-size: 11px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.45);
+      margin-bottom: 24px;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: 0.5px;
+    }
+
+    .mock-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .mock-photo-frame {
+      height: 120px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(201, 168, 76, 0.08), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mock-photo-frame::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 22px; height: 22px;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+    }
+
+    .mock-text-col {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .mock-text-line {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 100px;
+    }
+
+    .mock-text-line.main {
+      height: 7px;
+      background: var(--gold);
+      opacity: 0.85;
+      width: 70%;
+    }
+
+    .mock-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 26px;
+      padding-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.3);
+      font-family: monospace;
+      letter-spacing: 0.5px;
+    }
+
+    /* Left Bottom Content */
+    .left-content {
+      position: relative; 
+      z-index: 2;
+      margin-top: 40px;
+    }
+
+    .left-eyebrow {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .left-eyebrow::before {
+      content: '';
+      width: 20px;
+      height: 1.5px;
+      background: var(--gold);
+    }
+
+    .left-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 400;
+      line-height: 1.15;
+      color: #ffffff;
+      margin-bottom: 16px;
+    }
+
+    .left-title em {
+      font-style: italic;
+      color: var(--gold);
+      font-weight: 300;
+    }
+
+    .left-desc {
+      font-size: 14.5px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.7;
+      font-weight: 300;
+      max-width: 420px;
+    }
+
+    /* ── RIGHT PANEL — FORM ── */
+    .right-panel {
+      background: var(--paper);
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      padding: 3rem;
+      box-sizing: border-box;
+    }
+
+    .form-box { 
+      width: 100%; 
+      max-width: 400px; 
+    }
+
+    .form-heading { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 2.4rem; 
+      font-weight: 400; 
+      color: var(--ink); 
+      margin-bottom: .6rem; 
+    }
+
+    .form-sub { 
+      font-size: 14px; 
+      color: var(--ink-muted); 
+      margin-bottom: 2.2rem; 
+      font-weight: 300;
+    }
+
+    .form-sub a { 
+      color: var(--gold); 
+      text-decoration: none; 
+      font-weight: 600; 
+    }
+
+    .form-sub a:hover { 
+      text-decoration: underline; 
+    }
+
+    .flash-inline { 
+      padding: .85rem 1.1rem; 
+      border-radius: 10px; 
+      font-size: 13.5px; 
+      margin-bottom: 1.5rem; 
+      display: flex; 
+      align-items: center; 
+      gap: .6rem; 
+      font-weight: 500;
+    }
+
+    .flash-inline.error   { background: #FEF2F2; color: #B91C1C; border: 1px solid #FCA5A5; }
+    .flash-inline.success { background: #F0FDF4; color: #15803D; border: 1px solid #86EFAC; }
+
+    .form-group { 
+      margin-bottom: 1.3rem; 
+    }
+
+    .form-label { 
+      display: block; 
+      font-size: 11px; 
+      font-weight: 700; 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+      color: var(--ink-soft); 
+      margin-bottom: .6rem; 
+    }
+
+    .form-input { 
+      width: 100%; 
+      padding: .85rem 1.1rem; 
+      background: var(--white); 
+      border: 1px solid var(--border); 
+      border-radius: 10px; 
+      font-family: var(--font-body); 
+      font-size: 14px; 
+      color: var(--ink); 
+      outline: none; 
+      transition: all .3s ease; 
+      box-sizing: border-box;
+    }
+
+    .form-input:focus { 
+      border-color: var(--gold); 
+      box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15); 
+    }
+
+    .password-wrapper { position: relative; }
+    
+    .toggle-password {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--ink-muted);
+      cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;
+      transition: color .2s; z-index: 10;
+    }
+
+    .toggle-password:hover { color: var(--gold); }
+    .form-input[name="password"] { padding-right: 42px; }
+
+    .btn-submit { 
+      width: 100%; 
+      padding: 1rem; 
+      background: var(--ink); 
+      color: var(--white); 
+      border: none; 
+      border-radius: 10px; 
+      font-family: 'Outfit', sans-serif; 
+      font-size: 13px; 
+      font-weight: 700; 
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer; 
+      transition: all .3s cubic-bezier(0.16, 1, 0.3, 1); 
+      margin-top: .8rem; 
+      position: relative; 
+      overflow: hidden; 
+      display: block; 
+      text-align: center; 
+      text-decoration: none; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-submit::after { 
+      content: ''; 
+      position: absolute; 
+      inset: 0; 
+      background: linear-gradient(135deg, var(--gold), #A8882A); 
+      opacity: 0; 
+      transition: opacity .4s ease; 
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(201, 168, 76, 0.25);
+    }
+
+    .btn-submit:hover::after { 
+      opacity: 1; 
+    }
+    
+    .btn-submit span { 
+      position: relative; 
+      z-index: 1; 
+    }
+
+    .divider { 
+      display: flex; 
+      align-items: center; 
+      gap: 1rem; 
+      margin: 1.8rem 0; 
+      font-size: 11px; 
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--ink-muted); 
+    }
+    
+    .divider::before, .divider::after { 
+      content: ''; 
+      flex: 1; 
+      height: 1px; 
+      background: var(--border); 
+    }
+
+    .btn-google { 
+      width: 100%; 
+      padding: .85rem; 
+      background: var(--white); 
+      border: 1px solid var(--border); 
+      border-radius: 10px; 
+      font-family: 'Outfit', sans-serif; 
+      font-size: 12px; 
+      font-weight: 700; 
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-soft); 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: .7rem; 
+      transition: all .3s ease; 
+      text-decoration: none; 
+      box-shadow: 0 2px 8px rgba(0,0,0,.02);
+    }
+
+    .btn-google:hover { 
+      border-color: var(--gold); 
+      color: var(--ink); 
+      box-shadow: 0 4px 15px rgba(201,168,76,.15); 
+      transform: translateY(-1px);
+    }
+
+    .btn-google svg { 
+      width: 16px; 
+      height: 16px; 
+      flex-shrink: 0; 
+    }
+
+    .form-footer { 
+      margin-top: 2rem; 
+      text-align: center; 
+      font-size: 13px; 
+    }
+
+    .form-footer a { 
+      color: var(--ink-muted); 
+      text-decoration: none; 
+      font-weight: 500; 
+      transition: color .2s;
+    }
+
+    .form-footer a:hover {
+      color: var(--gold);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <!-- Left visual panel with high-fidelity magazine mockup -->
+    <div class="left-panel">
+        <div class="magazine-mockup-wrapper">
+            <div class="magazine-page-glass">
+                <div class="mock-header">
+                    <span>Ấn Bản Độc Quyền</span>
+                    <span>Couture Issue</span>
+                </div>
+                <h2 class="mock-title">Nghệ Thuật &<br><span>Thời Trang</span></h2>
+                <div class="mock-subtitle">Dàn trang tự động bởi AI Magazine</div>
+                
+                <div class="mock-layout">
+                    <div class="mock-photo-frame"></div>
+                    <div class="mock-text-col">
+                        <div class="mock-text-line main"></div>
+                        <div class="mock-text-line" style="width: 90%;"></div>
+                        <div class="mock-text-line" style="width: 80%;"></div>
+                        <div class="mock-text-line" style="width: 85%;"></div>
+                        <div class="mock-text-line" style="width: 60%;"></div>
+                    </div>
+                </div>
+                
+                <div class="mock-footer">
+                    <span>CHƯƠNG II • THỜI TRANG</span>
+                    <span>TRANG 12</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="left-content">
+            <div class="left-eyebrow">Dàn trang tự động từ Word sang PDF</div>
+            <h1 class="left-title">Ngôn Từ Khởi Tạo<br><em>Kiệt Tác Tạp Chí.</em></h1>
+            <p class="left-desc">
+                Tải bản thảo Word lên — Hệ thống AI tự động phân tích ngữ nghĩa, phân bố chương mục và dàn trang chuẩn Vogue trong tích tắc.
+            </p>
+        </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="right-panel">
+        <div class="form-box">
+            <h1 class="form-heading">Đăng Nhập</h1>
+            <p class="form-sub">
+                Chưa có tài khoản?
+                <a href="/register">Đăng ký ngay</a>
+            </p>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cat, msg in messages %}
+                <div class="flash-inline {{ cat }}">
+                    {% if cat == 'success' %}✓{% elif cat == 'error' %}✕{% else %}ℹ{% endif %}
+                    {{ msg }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ Email</label>
+                    <input class="form-input" type="email" name="email" placeholder="name@domain.com" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu</label>
+                    <div class="password-wrapper">
+                        <input class="form-input" type="password" name="password" id="password" placeholder="••••••••" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="btn-submit" type="submit">
+                    <span>Đăng nhập →</span>
+                </button>
+            </form>
+
+            {% if google_enabled %}
+            <div class="divider">Hoặc tiếp tục bằng</div>
+            <a href="/login/google" class="btn-google">
+                <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#4285F4" d="M16.51 8H9.09v3h4.26c-.37 1.96-2.08 3-4.26 3a4.99 4.99 0 010-9.98c1.27 0 2.42.48 3.29 1.27l2.11-2.11A8 8 0 109.09 17c4.42 0 8-3.58 8-8 0-.56-.07-1-.58-1z"/>
+                    <path fill="#34A853" d="M1.86 5.46l2.43 1.78A5.01 5.01 0 019.09 4a4.88 4.88 0 013.29 1.27l2.11-2.11A8 8 0 001.86 5.46z"/>
+                    <path fill="#FBBC05" d="M9.09 17a7.97 7.97 0 005.42-2.12l-2.49-2.04a5.01 5.01 0 01-7.64-2.61L1.9 12.04A8 8 0 009.09 17z"/>
+                    <path fill="#EA4335" d="M16.51 8H9.09v3h4.26c-.18.96-.78 1.77-1.63 2.3l2.49 2.04C15.92 13.79 17.09 11.06 16.51 8z"/>
+                </svg>
+                Google Account
+            </a>
+            {% endif %}
+
+            <div class="form-footer">
+                <a href="/">← Quay lại Trang chủ</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

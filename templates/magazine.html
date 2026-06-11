@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Kết quả Tạp chí — AI Magazine Creator{% endblock %}
+
+{% block extra_css %}
+<style>
+    body { background: var(--bg); }
+    
+    .magazine-result-container {
+      max-width: 750px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+    
+    .result-glass-card {
+      background: var(--surface) !important;
+      backdrop-filter: blur(35px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 20px !important;
+      padding: 50px;
+      text-align: center;
+      box-shadow: var(--shadow-lg) !important;
+      transition: all 0.4s var(--ease-out);
+    }
+    
+    .result-glass-card:hover {
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.1) !important;
+      transform: translateY(-2px);
+    }
+    
+    [data-theme="dark"] .result-glass-card:hover {
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    .magazine-icon {
+      font-size: 4rem;
+      margin-bottom: 24px;
+      filter: drop-shadow(0 10px 15px rgba(201, 168, 76, 0.2));
+    }
+    
+    .magazine-result-container h1 {
+      font-family: 'Playfair Display', serif !important;
+      font-size: 2.2rem !important;
+      font-weight: 400 !important;
+      color: var(--text-1) !important;
+      margin-bottom: 16px;
+    }
+    
+    .magazine-result-container p {
+      font-size: 15px !important;
+      color: var(--text-3) !important;
+      line-height: 1.8 !important;
+      margin-bottom: 30px;
+    }
+    
+    .magazine-content-box {
+      text-align: left;
+      margin-bottom: 30px;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      font-family: var(--font-body);
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+    
+    .magazine-btn-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .btn-action-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 30px;
+      background: linear-gradient(135deg, var(--gold), #A8882A);
+      color: #080B11 !important;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      box-shadow: 0 4px 15px rgba(201, 168, 76, 0.2);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .btn-action-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(201, 168, 76, 0.35);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="magazine-result-container">
+    <div class="result-glass-card">
+        <div class="magazine-icon">📰</div>
+        <h1>Tạp chí của bạn</h1>
+        
+        {% if content %}
+        <div class="magazine-content-box">{{ content | safe }}</div>
+        {% else %}
+        <p>Nội dung tạp chí sẽ hiển thị tại đây sau khi xử lý xong.</p>
+        {% endif %}
+        
+        <div class="magazine-btn-actions">
+            <a href="/editor" class="btn-action-primary">← Tạo tạp chí mới</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

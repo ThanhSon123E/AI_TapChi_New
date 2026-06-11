@@ -1,0 +1,632 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: var(--bg);
+        color: var(--text-2);
+        position: relative;
+    }
+
+    /* Ambient Orbs */
+    [data-theme="dark"] body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: -10%;
+      width: 50%; height: 50%;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.07) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="dark"] body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -10%;
+      width: 60%; height: 60%;
+      background: radial-gradient(circle, rgba(124, 62, 158, 0.06) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="light"] body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: -10%;
+      width: 55%; height: 55%;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="light"] body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -10%;
+      width: 65%; height: 65%;
+      background: radial-gradient(circle, rgba(226, 192, 106, 0.04) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .billing-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 32px;
+        align-items: start;
+    }
+
+    @media (max-width: 850px) {
+        .billing-grid {
+            grid-template-columns: 1fr;
+        }
+        .right-col {
+            order: -1;
+        }
+    }
+
+    .card {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(35px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 24px;
+        box-shadow: var(--shadow-sm) !important;
+        transition: all 0.4s var(--ease-out) !important;
+    }
+
+    .card:hover {
+        box-shadow: var(--shadow-md) !important;
+        transform: translateY(-2px);
+    }
+
+    .card-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--text-1);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-3);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-input {
+        width: 100%;
+        height: 48px;
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        border-radius: 10px;
+        padding: 0 16px;
+        font-size: 15px;
+        color: var(--text-1);
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--gold);
+        background: var(--surface);
+        box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15);
+    }
+
+    .btn-submit {
+        width: 100%;
+        height: 48px;
+        background: linear-gradient(135deg, var(--gold), #A8882A);
+        color: #080B11 !important;
+        border: none;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s var(--ease-out);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 24px;
+        box-shadow: 0 4px 12px rgba(201, 168, 76, 0.2);
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, var(--gold-light), var(--gold));
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(201, 168, 76, 0.35);
+    }
+
+    /* ── QR SECTION ── */
+    .qr-card {
+        text-align: center;
+    }
+
+    .qr-container {
+        background: #fff;
+        padding: 16px;
+        border-radius: var(--radius-md);
+        display: inline-block;
+        margin-bottom: 20px;
+        border: 1px solid var(--border);
+    }
+
+    .qr-image {
+        width: 200px;
+        height: 200px;
+        display: block;
+    }
+
+    .payment-info {
+        text-align: left;
+        background: var(--surface-2);
+        padding: 20px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
+
+    .info-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-label {
+        color: var(--text-3);
+    }
+
+    .info-value {
+        font-weight: 700;
+        color: var(--text-1);
+    }
+
+    .copy-btn {
+        cursor: pointer;
+        color: var(--gold);
+        margin-left: 8px;
+        transition: opacity .2s;
+    }
+
+    .copy-btn:hover {
+        opacity: .7;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pending {
+        background: rgba(245, 158, 11, 0.15);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-paid {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-cancelled {
+        background: rgba(244, 63, 94, 0.15);
+        color: #F43F5E;
+        border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    /* ── HISTORY ── */
+    .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-radius: 10px;
+        background: var(--surface-2);
+        margin-bottom: 10px;
+        transition: all 0.3s var(--ease-out);
+        border: 1px solid var(--border);
+    }
+
+    .history-item:hover {
+        transform: translateX(5px);
+        border-color: var(--gold);
+    }
+
+    .history-info h4 {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-1);
+    }
+
+    .history-info p {
+        font-size: 12px;
+        color: var(--text-3);
+    }
+
+    .history-amount {
+        text-align: right;
+    }
+
+    .history-amount span {
+        display: block;
+        font-weight: 700;
+        color: var(--text-1);
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-2);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 24px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        padding: 8px 16px;
+        border-radius: 100px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+    }
+
+    .back-link:hover {
+        color: var(--gold);
+        background: var(--surface);
+        border-color: var(--gold);
+        transform: translateX(-5px);
+    }
+
+    .filter-btn {
+        padding: 5px 12px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--text-2);
+        transition: all 0.2s;
+    }
+    .filter-btn.active {
+        background: var(--gold);
+        color: #080B11;
+        border-color: var(--gold);
+    }
+
+    .history-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .history-list-container {
+        max-height: 500px;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+    .history-list-container::-webkit-scrollbar { width: 4px; }
+    .history-list-container::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+
+    .btn-pay {
+        width: 100%;
+        height: 40px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 13px;
+        transition: 0.2s;
+    }
+    .btn-pay:hover { opacity: 0.8; }
+
+    /* Package Cards styling */
+    .pack-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border) !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-radius: 12px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .pack-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(135deg, rgba(201, 168, 76, 0.05), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .pack-card:hover {
+        border-color: var(--gold) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(201, 168, 76, 0.1) !important;
+    }
+    .pack-card:hover::before {
+        opacity: 1;
+    }
+    .pack-card.active {
+        border-color: var(--gold) !important;
+        background: rgba(201, 168, 76, 0.08) !important;
+        box-shadow: 0 0 0 1px var(--gold) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+
+    <div class="billing-grid">
+        <div class="left-col">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-wallet" style="color: var(--gold);"></i> Top up account</h2>
+                
+                <form action="{{ url_for('billing') }}" method="POST">
+                    {% if pricing_packages %}
+                    <div style="margin-bottom: 24px;">
+                        <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin-bottom: 12px; display: block;" data-i18n="Chọn nhanh gói nạp tiền">Chọn nhanh gói nạp tiền</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            {% for pack in pricing_packages %}
+                            <div class="pack-card" onclick="selectPackage({{ pack.amount }})">
+                                <h4 style="font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-gem" style="font-size: 12px;"></i> {{ pack.name }}
+                                </h4>
+                                <p class="currency-convert" data-balance="{{ pack.amount }}" style="font-size: 16px; font-weight: 800; color: var(--text-1); margin-bottom: 8px;">{{ "{:,.0f}".format(pack.amount).replace(",", ".") }} VND</p>
+                                <p style="font-size: 11px; color: var(--text-3); line-height: 1.4; margin: 0;">{{ pack.desc }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label><span data-i18n="Số tiền muốn nạp">Deposit Amount</span> (<span class="currency-unit">VND</span>)</label>
+                        <input type="text" id="displayAmount" class="form-input" data-i18n="Ví dụ: 50.000" placeholder="e.g. 50.000" required>
+                        <input type="hidden" name="amount" id="realAmount">
+                        <p style="font-size: 11px; color: var(--text-3); margin-top: 8px;">
+                            <span data-i18n="Tối thiểu">Minimum</span> <span class="currency-convert" data-balance="10000">10,000 VND</span>. <span data-i18n="Hệ thống tự động cộng tiền sau khi nhận chuyển khoản.">System will automatically add funds after receiving transfer.</span>
+                        </p>
+                    </div>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-qrcode"></i> <span data-i18n="Tạo mã QR thanh toán">Generate QR Code</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3 class="card-title" style="font-size: 18px;"><i class="fas fa-history" style="color: var(--gold);"></i> <span data-i18n="Giao dịch cá nhân gần đây">Recent transactions</span></h3>
+                <div class="history-tabs">
+                    <button type="button" class="filter-btn active" onclick="filterPayments('all', this)" data-i18n="Tất cả">All</button>
+                    <button type="button" class="filter-btn" onclick="filterPayments('paid', this)" data-i18n="Thành công">Success</button>
+                    <button type="button" class="filter-btn" onclick="filterPayments('pending', this)" data-i18n="Chờ xử lý">Pending</button>
+                </div>
+
+                <div class="history-list-container" id="historyContainer">
+                    {% for p in recent_payments %}
+                    <div class="history-item payment-row" data-status="{{ p.status }}">
+                        <div class="history-info">
+                            <h4>{{ p.payment_code }}</h4>
+                            <p>{{ p.created_at|vntime }}</p>
+                        </div>
+                        <div class="history-amount">
+                            <span class="currency-convert" data-balance="{{ p.amount }}">{{ "{:,.0f}".format(p.amount).replace(",", ".") }} VND</span>
+                            <span class="status-badge {{ 'status-paid' if p.status == 'paid' else 'status-cancelled' if p.status == 'cancelled' else 'status-pending' }}" data-i18n="{{ 'Thành công' if p.status == 'paid' else 'ĐÃ HỦY' if p.status == 'cancelled' else 'Chờ xử lý' }}">
+                                {{ 'Success' if p.status == 'paid' else 'Cancelled' if p.status == 'cancelled' else 'Pending' }}
+                            </span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="text-align: center; color: var(--text-3); padding: 20px;" data-i18n="Chưa có giao dịch nào">No transactions found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="right-col">
+            {% if payment and payment.status == 'pending' %}
+            <div class="card qr-card">
+                <h3 class="card-title" style="font-size: 18px; justify-content: center;">Scan QR Code</h3>
+                <div class="qr-container">
+                    {% set qr_url = "https://qr.sepay.vn/img?acc=" ~ sepay_account_number ~ "&bank=" ~
+                    sepay_bank_name ~ "&amount=" ~ payment.amount ~ "&des=" ~ payment.transfer_content ~
+                    "&template=compact" %}
+                    <img src="{{ qr_url }}" alt="QR Thanh toán" class="qr-image">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <button type="button" onclick="cancelPayment('{{ payment.payment_code }}')" class="btn-pay"
+                        style="background: #FEF1F1; color: #8B1A1A; border: 1px solid #FBBEBE;">
+                        <i class="fas fa-times-circle"></i> Cancel Payment
+                    </button>
+                </div>
+
+                <div class="payment-info">
+                    <div class="info-row">
+                        <span class="info-label">Bank:</span>
+                        <span class="info-value">{{ sepay_bank_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Account No:</span>
+                        <span class="info-value">{{ sepay_account_number }} <i class="far fa-copy copy-btn"
+                                onclick="copyText('{{ sepay_account_number }}')"></i></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Account Name:</span>
+                        <span class="info-value">{{ sepay_account_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Amount:</span>
+                        <span class="info-value" style="color: var(--gold);"><span class="currency-convert" data-balance="{{ payment.amount }}">{{ "{:,.0f}".format(payment.amount).replace(",", ".") }} VND</span></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Content:</span>
+                        <span class="info-value">{{ payment.transfer_content }} <i class="far fa-copy copy-btn"
+                                onclick="copyText('{{ payment.transfer_content }}')"></i></span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; font-size: 13px; color: var(--text-3);">
+                    <p><i class="fas fa-sync-alt fa-spin"></i> Waiting for payment...</p>
+                    <p style="margin-top: 8px; font-weight: bold; color: var(--gold);">QR expires in: <span
+                            id="countdownTimer">05:00</span></p>
+                </div>
+            </div>
+            {% elif payment and payment.status == 'paid' %}
+            <div class="card"
+                style="text-align: center; padding: 40px 20px; border: 1px solid #A3E6BF; background: #EDFBF2;">
+                <i class="fas fa-check-circle" style="font-size: 48px; color: #0A5C2E; margin-bottom: 16px;"></i>
+                <h3 style="color: #0A5C2E; font-size: 20px; margin-bottom: 8px;">Payment Successful!</h3>
+                <p style="color: #0A5C2E;">Transaction <b>{{ payment.payment_code }}</b> has been completed.</p>
+                <p style="color: #0A5C2E; margin-top: 12px; font-weight: 600;">Paid amount: <span
+                        style="font-size: 18px;" class="currency-convert" data-balance="{{ payment.amount or 0 }}">{{ "{:,.0f}".format(payment.amount or 0).replace(",", ".") }} VND</span></p>
+            </div>
+            {% elif payment and payment.status == 'cancelled' %}
+            <div class="card"
+                style="text-align: center; padding: 40px 20px; border: 1px solid #FBBEBE; background: #FEF1F1;">
+                <i class="fas fa-times-circle" style="font-size: 48px; color: #8B1A1A; margin-bottom: 16px;"></i>
+                <h3 style="color: #8B1A1A; font-size: 20px; margin-bottom: 8px;">Transaction Cancelled</h3>
+                <p style="color: #8B1A1A;">Transaction <b>{{ payment.payment_code }}</b> was cancelled or timed out.</p>
+                <a href="/billing" class="back-link" style="justify-content: center; margin-top: 16px;"><i
+                        class="fas fa-sync-alt"></i> Create new transaction</a>
+            </div>
+            {% else %}
+            <div class="card" style="text-align: center; padding: 40px 20px;">
+                <i class="fas fa-shield-alt"
+                    style="font-size: 40px; color: var(--border); margin-bottom: 16px;"></i>
+                <p style="color: var(--text-3);">Create a payment request to receive transfer details.</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyText(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert(t('Copied') + ': ' + text);
+        });
+    }
+
+    const paymentStatus = "{{ payment.status if payment else '' }}";
+    const paymentCode = "{{ payment.payment_code if payment else '' }}";
+    let timeLeft = parseInt("{{ time_left if time_left is defined else 300 }}") || 300;
+
+    function cancelPayment(code, isTimeout = false) {
+        fetch('/api/cancel-payment/' + code, { method: 'POST' })
+            .then(r => r.json())
+            .then(res => {
+                if (res.ok) {
+                    window.location.reload();
+                }
+            })
+            .catch(err => console.error('Lỗi khi hủy:', err));
+    }
+
+    if (paymentStatus === 'pending') {
+        const checkStatus = () => {
+            fetch('/api/payment-status/' + paymentCode)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ok && data.is_paid) {
+                        location.reload();
+                    }
+                })
+                .catch(err => console.error('Lỗi kiểm tra:', err));
+        };
+        const statusInterval = setInterval(checkStatus, 5000);
+
+        const timerInterval = setInterval(() => {
+            timeLeft--;
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            const timerEl = document.getElementById('countdownTimer');
+            if (timerEl) {
+                timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                clearInterval(statusInterval);
+                cancelPayment(paymentCode, true);
+            }
+        }, 1000);
+    }
+
+    function filterPayments(status, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        document.querySelectorAll('.payment-row').forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = 'flex';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    const displayInput = document.getElementById('displayAmount');
+    const realInput = document.getElementById('realAmount');
+
+    if (displayInput) {
+        displayInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            realInput.value = value;
+            if (value) {
+                e.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            } else {
+                e.target.value = '';
+            }
+        });
+    }
+
+    function selectPackage(amount) {
+        // Remove active class from all packages
+        document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('active'));
+        // Find clicked card and add active class (via event)
+        event.currentTarget.classList.add('active');
+        
+        const displayInput = document.getElementById('displayAmount');
+        const realInput = document.getElementById('realAmount');
+        if (displayInput && realInput) {
+            realInput.value = amount;
+            displayInput.value = amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+    }
+</script>
+{% endblock %}

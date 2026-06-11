@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: var(--bg);
+        color: var(--text-2);
+        position: relative;
+    }
+
+    /* Ambient Orbs */
+    [data-theme="dark"] body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: -10%;
+      width: 50%; height: 50%;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.07) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="dark"] body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -10%;
+      width: 60%; height: 60%;
+      background: radial-gradient(circle, rgba(124, 62, 158, 0.06) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="light"] body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: -10%;
+      width: 55%; height: 55%;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    [data-theme="light"] body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%; right: -10%;
+      width: 65%; height: 65%;
+      background: radial-gradient(circle, rgba(226, 192, 106, 0.04) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── PAGE CONTENT ── */
+    .page-header {
+        background: transparent;
+        padding: 60px 0 100px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 700;
+        color: var(--text-1);
+        margin-bottom: 10px;
+    }
+
+    .page-header p {
+        color: var(--text-3);
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: -60px auto 60px;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .history-card {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(35px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 30px;
+        box-shadow: var(--shadow-md) !important;
+        border: 1px solid var(--glass-border) !important;
+        transition: all 0.4s var(--ease-out) !important;
+    }
+
+    .history-card:hover {
+        box-shadow: var(--shadow-lg) !important;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .history-table th {
+        text-align: left;
+        padding: 15px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-3);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .history-table td {
+        padding: 20px 15px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+        color: var(--text-2);
+    }
+
+    .history-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .doc-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .doc-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--surface-2);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold);
+        font-size: 20px;
+        border: 1px solid var(--border);
+    }
+
+    .doc-name {
+        font-weight: 700;
+        color: var(--text-1);
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .doc-meta {
+        font-size: 12px;
+        color: var(--text-3);
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .badge-success {
+        background: rgba(16, 185, 129, 0.08);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.15);
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s var(--ease-out);
+        border: 1px solid var(--border);
+        color: var(--text-2);
+        background: var(--surface-2);
+    }
+
+    .btn-action:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: var(--surface);
+        transform: translateY(-2px);
+    }
+
+    .btn-delete:hover {
+        border-color: #ff4d4f !important;
+        color: #ff4d4f !important;
+        background: rgba(255, 77, 79, 0.1) !important;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 0;
+        color: var(--text-3);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+    /* ── MOBILE OPTIMIZATION ── */
+    @media (max-width: 768px) {
+        .page-header { padding: 40px 20px 80px; }
+        .page-header h1 { font-size: 28px; }
+        
+        .container { margin-top: -40px; padding: 0 16px; }
+        .history-card { padding: 16px; border-radius: var(--radius-md); }
+        
+        .history-table thead { display: none; }
+        .history-table tr { 
+            display: block; 
+            padding: 20px 0; 
+            border-bottom: 1px solid var(--border);
+        }
+        .history-table tr:last-child { border-bottom: none; }
+        .history-table td { 
+            display: block; 
+            padding: 8px 0; 
+            border-bottom: none;
+            text-align: left !important;
+        }
+        .history-table td::before { 
+            content: attr(data-label); 
+            display: block; 
+            font-size: 10px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: var(--text-3);
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .actions { justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
+        .btn-action { width: 40px; height: 40px; }
+    }
+
+    /* ── CUSTOM CONFIRMATION MODAL ── */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+    .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 440px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    [data-theme="dark"] .modal-content {
+        background: var(--surface-2) !important;
+        border-color: var(--glass-border) !important;
+    }
+    @keyframes modalSlideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-body {
+        padding: 30px;
+        text-align: center;
+    }
+    .modal-body i.icon-warning {
+        font-size: 56px;
+        color: #ff4d4f;
+        margin-bottom: 20px;
+        filter: drop-shadow(0 4px 12px rgba(255, 77, 79, 0.2));
+        display: inline-block;
+    }
+    .modal-body h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        color: var(--text-1);
+        margin-bottom: 12px;
+        font-weight: 700;
+    }
+    .modal-body p {
+        font-size: 14px;
+        color: var(--text-2);
+        line-height: 1.6;
+        margin-bottom: 28px;
+    }
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    .btn-modal {
+        padding: 0 24px;
+        height: 44px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-modal-cancel {
+        background: var(--surface-2);
+        color: var(--text-2);
+        border: 1px solid var(--border);
+    }
+    .btn-modal-cancel:hover {
+        background: var(--surface);
+        border-color: var(--text-3);
+    }
+    .btn-modal-confirm {
+        background: #ff4d4f;
+        color: #fff;
+        border: none;
+        box-shadow: 0 4px 14px rgba(255, 77, 79, 0.3);
+    }
+    .btn-modal-confirm:hover {
+        background: #ff7875;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(255, 77, 79, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title" data-i18n="Magazine Generation History">Magazine Generation History</h1>
+    <p class="page-subtitle" data-i18n="List of magazines you have created with AI">List of magazines you have created with AI</p>
+</div>
+
+<div class="container">
+    <div class="history-card">
+        {% if histories %}
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th data-i18n="Document">Document</th>
+                    <th data-i18n="Time">Time</th>
+                    <th data-i18n="Status">Status</th>
+                    <th style="text-align: right;" data-i18n="Action">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in histories %}
+                <tr>
+                    <td data-label="Document">
+                        <div class="doc-info">
+                            <div class="doc-icon"><i class="fas fa-file-pdf"></i></div>
+                            <div>
+                                <span class="doc-name" data-i18n="Untitled Magazine">{{ h.title or "Untitled Magazine" }}</span>
+                                <span class="doc-meta" data-i18n="{{ h.template }}">{{ h.template }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Time">
+                        <span style="font-size: 13px;">{{ h.created_at|vntime if h.created_at else "N/A" }}</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="badge badge-success" data-i18n="Success">Success</span>
+                    </td>
+                    <td data-label="Action">
+                        <div class="actions">
+                            <a href="{{ url_for('static', filename='outputs/' + h.pdf_filename) }}" target="_blank" class="btn-action" data-i18n-title="View Online" title="View Online">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('view_flipbook', filename=h.pdf_filename) }}" target="_blank" class="btn-action" data-i18n-title="View Flipbook" title="View Flipbook">
+                                <i class="fas fa-book-open"></i>
+                            </a>
+                            <a href="{{ url_for('static', filename='outputs/' + h.pdf_filename) }}" download class="btn-action" data-i18n-title="Download" title="Download">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <button type="button" class="btn-action btn-delete" data-i18n-title="Delete" title="Delete" onclick="deleteHistory({{ h.id }}, '{{ h.title|escape }}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <p data-i18n="You haven't created any magazines yet.">You haven't created any magazines yet.</p>
+            <a href="/" class="btn-primary" style="margin-top: 20px; text-decoration: none;" data-i18n="Create Now">Create Magazine</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Premium Modal Overlay -->
+<div id="modalOverlay" class="modal-overlay" onclick="if(event.target === this) closeModal()"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const modalOverlay = document.getElementById('modalOverlay');
+
+    function showModal(contentHtml) {
+        modalOverlay.innerHTML = contentHtml;
+        modalOverlay.style.display = 'flex';
+        // Force reflow
+        modalOverlay.offsetHeight;
+        modalOverlay.classList.add('active');
+        if (typeof applyTranslations === 'function') {
+            applyTranslations(localStorage.getItem('lang') || 'en');
+        }
+    }
+
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        setTimeout(() => {
+            modalOverlay.style.display = 'none';
+            modalOverlay.innerHTML = '';
+        }, 300);
+    }
+
+    function deleteHistory(id, title) {
+        const titleText = typeof t === 'function' ? t('Confirm Delete') : 'Confirm Delete';
+        const rawMsg = typeof t === 'function' ? t('Are you sure you want to delete this history? The PDF file will also be deleted from the system.') : 'Are you sure you want to delete this history? The PDF file will also be deleted from the system.';
+        const msgText = `${rawMsg} <br><strong style="color:var(--text-1); display:block; margin-top:8px;">"${title}"</strong>`;
+        const cancelLabel = typeof t === 'function' ? t('Cancel') : 'Cancel';
+        const deleteLabel = typeof t === 'function' ? t('Delete') : 'Delete';
+
+        const html = `
+            <div class="modal-content">
+                <div class="modal-body">
+                    <i class="fas fa-exclamation-triangle icon-warning"></i>
+                    <h3>${titleText}</h3>
+                    <p>${msgText}</p>
+                    <div class="modal-actions">
+                        <button class="btn-modal btn-modal-cancel" onclick="closeModal()">${cancelLabel}</button>
+                        <button class="btn-modal btn-modal-confirm" id="confirmBtn">${deleteLabel}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        showModal(html);
+        
+        document.getElementById('confirmBtn').onclick = function() {
+            closeModal();
+            fetch(`/history/delete/${id}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || (typeof t === 'function' ? t('Delete failed') : 'Delete failed'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert(typeof t === 'function' ? t('Connection error during deletion.') : 'Connection error during deletion.');
+            });
+        };
+    }
+</script>
+{% endblock %}

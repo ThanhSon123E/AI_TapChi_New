@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magazine Flipbook</title>
+    <script>
+        const theme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+    </script>
+    <style>
+        :root {
+            --bg-grad-start: #e0e0e0;
+            --bg-grad-end: #a0a0a0;
+            --header-bg: rgba(255, 255, 255, 0.75);
+            --header-border: rgba(255, 255, 255, 0.3);
+            --text: #333333;
+            --control-bg: rgba(255, 255, 255, 0.85);
+            --control-border: rgba(255, 255, 255, 0.5);
+            --btn-bg: #ffffff;
+            --btn-border: #eeeeee;
+            --btn-text: #333333;
+        }
+        
+        [data-theme="dark"] {
+            --bg-grad-start: #11141A;
+            --bg-grad-end: #080B11;
+            --header-bg: rgba(8, 11, 17, 0.75);
+            --header-border: rgba(255, 255, 255, 0.05);
+            --text: #f3f4f6;
+            --control-bg: rgba(8, 11, 17, 0.85);
+            --control-border: rgba(255, 255, 255, 0.08);
+            --btn-bg: rgba(255, 255, 255, 0.04);
+            --btn-border: rgba(255, 255, 255, 0.08);
+            --btn-text: #f3f4f6;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            background-color: var(--bg-grad-end); 
+            background-image: radial-gradient(circle at 50% 50%, var(--bg-grad-start), var(--bg-grad-end));
+            display: flex; flex-direction: column; 
+            height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; 
+            overflow: hidden;
+            color: var(--text);
+        }
+
+        /* Floating Header */
+        .flip-header {
+            position: absolute; top: 20px; left: 20px; right: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000;
+        }
+        .flip-brand { font-family: 'Playfair Display', serif; font-weight: 900; color: var(--text); text-decoration: none; font-size: 24px; }
+        .flip-brand span { color: #C9A84C; }
+        .flip-close { 
+            width: 40px; height: 40px; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 50%; 
+            background: var(--btn-bg); 
+            border: 1px solid var(--btn-border);
+            color: var(--text); 
+            text-decoration: none; 
+            transition: 0.2s; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .flip-close:hover { background: var(--btn-bg); opacity: 0.9; transform: scale(1.05); border-color: #C9A84C; }
+        
+        /* Container */
+        #flipbook-container { 
+            flex: 1;
+            width: 100vw; 
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; 
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        #flipbook-wrapper {
+            width: 90%;
+            height: 90%;
+            max-width: 1100px;
+            max-height: 75vh;
+            display: flex; justify-content: center; align-items: center;
+            perspective: 2000px;
+        }
+        
+        /* Spinner CSS */
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(255,255,255,0.1); border-top-color: #C9A84C;
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Pages */
+        .page { 
+            background-color: white; 
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2); 
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .page::after { content: ""; position: absolute; top: 0; bottom: 0; width: 80px; pointer-events: none; z-index: 100; }
+        .stf__item.--left .page::after { right: 0; background: linear-gradient(to left, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%); }
+        .stf__item.--right .page::after { left: 0; background: linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%); }
+
+        .page-content { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .page-content canvas { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* Floating Controls */
+        .controls { 
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+            background: var(--control-bg); padding: 12px 25px; 
+            border-radius: 100px; box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--control-border);
+            z-index: 1000;
+        }
+        .btn { 
+            background: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--btn-border); 
+            padding: 8px 18px; border-radius: 100px; 
+            cursor: pointer; font-weight: 700; font-size: 14px;
+            transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+            text-decoration: none;
+        }
+        .btn:hover { border-color: #C9A84C; color: #C9A84C; transform: translateY(-1px); }
+        .btn-download { background: #18160F; color: #fff; border: none; }
+        .btn-download:hover { background: #000; color: #fff; }
+        .page-num { color: var(--text); font-weight: 700; font-size: 14px; min-width: 60px; text-align: center; opacity: 0.8; }
+
+        /* Orientation Warning */
+        #orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #121212;
+            z-index: 5000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        #orientation-warning i {
+            font-size: 60px;
+            color: #C9A84C;
+            margin-bottom: 20px;
+            animation: rotateDevice 2s infinite ease-in-out;
+        }
+        @keyframes rotateDevice {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-90deg); }
+            100% { transform: rotate(0deg); }
+        }
+        #orientation-warning h2 { margin: 10px 0; font-family: 'Playfair Display', serif; }
+        #orientation-warning p { opacity: 0.8; font-size: 14px; line-height: 1.5; }
+
+        @media (max-width: 900px) and (orientation: portrait) {
+            #orientation-warning { display: flex; }
+        }
+
+        /* UI Controls Mobile */
+        @media (max-width: 768px) {
+            .controls {
+                width: 90%;
+                padding: 10px 15px;
+                bottom: 15px;
+                gap: 8px;
+            }
+            .btn { padding: 8px 12px; font-size: 12px; }
+            .btn span { display: none; }
+            .page-num { font-size: 12px; }
+            #flipbook-wrapper { max-height: 65vh; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="orientation-warning">
+        <i class="fas fa-mobile-alt"></i>
+        <h2>Please rotate your device</h2>
+        <p>For the best experience, please rotate your device to landscape mode.</p>
+    </div>
+
+    <!-- Unified Header -->
+    <header class="flip-header">
+        <a href="/" class="flip-brand">AI <span>Magazine</span></a>
+        <a href="/" class="flip-close" title="Close" id="btnClose"><i class="fas fa-times"></i></a>
+    </header>
+
+    <div id="loading" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <div class="spinner"></div>
+        <div style="margin-top:15px; font-weight:600;">Loading magazine... <span id="progress">0</span>%</div>
+    </div>
+    
+    <div id="flipbook-container" style="display: none;">
+        <div id="flipbook-wrapper">
+            <div id="flipbook">
+                <!-- Pages generated here by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls" id="controls" style="display: none;">
+        <button class="btn" id="btn-prev">
+            <i class="fas fa-chevron-left"></i>
+            <span>Previous Page</span>
+        </button>
+        <span class="page-num"><span id="current-page">1</span>&nbsp;/&nbsp;<span id="total-pages">0</span></span>
+        <button class="btn" id="btn-next">
+            <span>Next Page</span>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <a class="btn btn-download" href="{{ pdf_url }}" download>
+            <i class="fas fa-download"></i>
+            <span>Download PDF</span>
+        </a>
+    </div>
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <!-- StPageFlip -->
+    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+    <script src="{{ url_for('static', filename='js/lang.js') }}"></script>
+    
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        
+        const pdfUrl = '{{ pdf_url }}';
+        let pdfDoc = null;
+        let pageFlip = null;
+        // The scale defines rendering quality (3 = Very High Sharpness)
+        const renderScale = 3; 
+
+        async function initFlipbook() {
+            try {
+                pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+                const totalPages = pdfDoc.numPages;
+                const displayTotalPages = totalPages % 2 !== 0 ? totalPages + 1 : totalPages;
+                document.getElementById('total-pages').textContent = displayTotalPages;
+                
+                const flipbookEl = document.getElementById('flipbook');
+                
+                // Get page 1 size to determine aspect ratio for StPageFlip
+                const page1 = await pdfDoc.getPage(1);
+                // We use scale 1 just to get the logical dimensions (e.g. 595 x 842 for A4)
+                const viewport1 = page1.getViewport({ scale: 1 });
+                const width = viewport1.width;
+                const height = viewport1.height;
+                
+                // Create placeholders for all pages
+                for (let i = 1; i <= totalPages; i++) {
+                    // Inject a blank page before the last page if the total number of pages is odd
+                    // This ensures StPageFlip has an even number of pages and correctly renders the back cover
+                    if (i === totalPages && totalPages % 2 !== 0) {
+                        const blankDiv = document.createElement('div');
+                        blankDiv.className = 'page';
+                        blankDiv.style.backgroundColor = '#ffffff';
+                        flipbookEl.appendChild(blankDiv);
+                    }
+
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'page';
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'page-content';
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.id = `canvas-page-${i}`;
+                    
+                    contentDiv.appendChild(canvas);
+                    pageDiv.appendChild(contentDiv);
+                    flipbookEl.appendChild(pageDiv);
+                }
+                
+                // Initialize PageFlip
+                // Use "stretch" and let the CSS container limit the max dimensions
+                pageFlip = new St.PageFlip(flipbookEl, {
+                    width: width,
+                    height: height,
+                    size: "stretch",
+                    minWidth: width * 0.3,
+                    maxWidth: width * 2,
+                    minHeight: height * 0.3,
+                    maxHeight: height * 2,
+                    maxShadowOpacity: 0.5,
+                    showCover: true, // Thinks page 1 is a hard cover
+                    mobileScrollSupport: true,
+                    disableFlipByClick: true // Avoid accidental flipping when clicking content
+                });
+
+                // Load pages dynamically
+                let loadedCount = 0;
+                for (let i = 1; i <= totalPages; i++) {
+                    const page = await pdfDoc.getPage(i);
+                    // Render the canvas in higher resolution
+                    const viewport = page.getViewport({ scale: renderScale });
+                    const canvas = document.getElementById(`canvas-page-${i}`);
+                    const context = canvas.getContext('2d', { alpha: false });
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    await page.render(renderContext).promise;
+                    
+                    loadedCount++;
+                    const percent = Math.round((loadedCount / totalPages) * 100);
+                    document.getElementById('progress').textContent = percent;
+                }
+
+                // Done loading, show the UI
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('flipbook-container').style.display = 'flex';
+                document.getElementById('controls').style.display = 'flex';
+                
+                // Tell PageFlip to grab the DOM elements
+                pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+                
+                // Events
+                pageFlip.on('flip', (e) => {
+                    // e.data is the current page index (0-based)
+                    // If showCover is true, the first page is single, then it shows spreads
+                    document.getElementById('current-page').textContent = e.data + 1;
+                });
+                
+                document.getElementById('btn-prev').addEventListener('click', () => {
+                    pageFlip.flipPrev();
+                });
+                
+                document.getElementById('btn-next').addEventListener('click', () => {
+                    pageFlip.flipNext();
+                });
+
+                // Keyboard support
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') pageFlip.flipPrev();
+                    if (e.key === 'ArrowRight') pageFlip.flipNext();
+                });
+
+                // Window resize support
+                window.addEventListener('resize', () => {
+                    if (pageFlip) {
+                        pageFlip.update();
+                    }
+                });
+
+            } catch (err) {
+                console.error("Error loading PDF: ", err);
+                document.getElementById('loading').innerHTML = `
+                    <div style="color:#d32f2f">❌ ${t('Error loading magazine.')}</div>
+                    <div style="font-size:14px;font-weight:normal;max-width:300px;text-align:center;margin-top:10px">${err.message}</div>
+                    <a href="/" class="btn" style="margin-top:20px">${t('Go Back')}</a>
+                `;
+            }
+        }
+        
+        // Go back handle - Chống lỗi resubmission bằng cách điều hướng trực tiếp
+        document.getElementById('btnClose').addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Nếu trang được mở trong iframe (ví dụ: khung preview trong dashboard admin hoặc editor iframe)
+            if (window.self !== window.top) {
+                // Nếu referrer là trang editor, quay lại trang editor trong iframe
+                if (document.referrer && document.referrer.includes('/editor')) {
+                    window.location.href = document.referrer;
+                } else {
+                    // Cố gắng gửi tin nhắn hoặc gọi hàm đóng preview của trang cha (admin.html)
+                    window.parent.postMessage({ type: 'closeFlipbook' }, '*');
+                    try {
+                        if (typeof window.parent.hidePreview === 'function') {
+                            window.parent.hidePreview();
+                            return;
+                        }
+                    } catch (err) {
+                        console.error("Lỗi khi đóng preview từ trang cha:", err);
+                    }
+                    // Nếu không đóng được, chuyển hướng về editor
+                    window.location.href = '/editor?embed=1';
+                }
+            } else {
+                // Nếu trang được mở riêng biệt (ví dụ: tab mới qua target="_blank")
+                if (window.opener || window.history.length === 1) {
+                    window.close();
+                } else {
+                    // Nếu có referrer từ trang editor, quay lại editor
+                    if (document.referrer && document.referrer.includes('/editor')) {
+                        window.location.href = '/editor';
+                    } else {
+                        window.location.href = '/';
+                    }
+                }
+            }
+        });
+
+        initFlipbook();
+    </script>
+</body>
+</html>
