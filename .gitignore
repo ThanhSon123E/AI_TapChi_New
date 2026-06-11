@@ -1,0 +1,42 @@
+# ═══════════════════════════════════════════
+# Bảo mật — KHÔNG BAO GIỜ commit những file này
+# ═══════════════════════════════════════════
+
+# Biến môi trường & key bí mật
+.env
+*.env
+.env.*
+!.env.example
+
+# Database người dùng
+instance/
+*.db
+*.sqlite3
+
+# Output PDF & file tạm
+static/outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+env/
+.venv/
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
