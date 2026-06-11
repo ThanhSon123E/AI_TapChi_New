@@ -10,7 +10,7 @@ import uuid
 import hmac
 import hashlib
 from datetime import datetime, timedelta
-from flask import (Flask, render_template, request, url_for,redirect, session, flash, abort, jsonify)
+from flask import (Flask, render_template, request, url_for,redirect, session, flash, abort, jsonify, send_from_directory)
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (LoginManager, UserMixin, login_user,logout_user, login_required, current_user)
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -38,11 +38,15 @@ def vntime_filter(dt):
         return ""
     return (dt + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M')
 
+# Check if running on Vercel (read-only filesystem, use /tmp for writes)
+IS_VERCEL = "VERCEL" in os.environ
+upload_folder = "/tmp" if IS_VERCEL else "static/outputs"
+
 app.config.update(
     SECRET_KEY                     = os.environ["SECRET_KEY"],
-    UPLOAD_FOLDER                  = "static/outputs",
+    UPLOAD_FOLDER                  = upload_folder,
     MAX_CONTENT_LENGTH             = 500 * 1024 * 1024, # Tăng lên 500MB để tránh lỗi 413
-    SQLALCHEMY_DATABASE_URI        = "mysql+pymysql://root:@localhost:3306/ai_tapchi",
+    SQLALCHEMY_DATABASE_URI        = os.getenv("DATABASE_URL", os.getenv("SQLALCHEMY_DATABASE_URI", "mysql+pymysql://root:@localhost:3306/ai_tapchi")),
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     SESSION_COOKIE_HTTPONLY        = True,
     SESSION_COOKIE_SAMESITE        = "Lax",
@@ -50,6 +54,11 @@ app.config.update(
     REMEMBER_COOKIE_HTTPONLY       = True,
     REMEMBER_COOKIE_DURATION       = 0,
 )
+
+# Custom route to serve output files from UPLOAD_FOLDER (critical for Vercel /tmp directory writes)
+@app.route('/static/outputs/<path:filename>')
+def serve_outputs(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 _OPENROUTER_KEY       = os.getenv("OPENROUTER_API_KEY", "")
 _SEPAY_WEBHOOK_SECRET = os.getenv("SEPAY_WEBHOOK_SECRET", "")
@@ -211,6 +220,24 @@ with app.app_context():
     except Exception as e:
         db.session.rollback()
         print(f"[INIT SETTINGS ERROR]: {e}")
+
+    # Tự động tạo tài khoản admin mặc định nếu chưa có tài khoản nào
+    try:
+        if not User.query.first():
+            admin_user = User(
+                email="admin@gmail.com",
+                name="System Admin",
+                password=generate_password_hash("123456"),
+                role="admin",
+                is_active=1,
+                balance=100000000
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+            print("[INIT] Created default admin account: admin@gmail.com / 123456")
+    except Exception as e:
+        db.session.rollback()
+        print(f"[INIT ADMIN ERROR]: {e}")
 
 from admin import register_admin
 register_admin(app, db, User, Payment, MagazineHistory, SystemSetting, get_setting, set_setting)
