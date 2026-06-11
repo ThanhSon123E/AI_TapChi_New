@@ -42,11 +42,24 @@ def vntime_filter(dt):
 IS_VERCEL = "VERCEL" in os.environ
 upload_folder = "/tmp" if IS_VERCEL else "static/outputs"
 
+# Construct SQLALCHEMY_DATABASE_URI dynamically if separate env vars are provided
+db_uri = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")
+if not db_uri:
+    db_user = os.getenv("DB_USER")
+    db_pwd = os.getenv("DB_PASSWORD")
+    db_host = os.getenv("DB_HOST")
+    db_port = os.getenv("DB_PORT", "3306")
+    db_name = os.getenv("DB_NAME")
+    if db_user and db_host and db_name:
+        db_uri = f"mysql+pymysql://{db_user}:{db_pwd or ''}@{db_host}:{db_port}/{db_name}"
+    else:
+        db_uri = "mysql+pymysql://root:@localhost:3306/ai_tapchi"
+
 app.config.update(
     SECRET_KEY                     = os.environ["SECRET_KEY"],
     UPLOAD_FOLDER                  = upload_folder,
     MAX_CONTENT_LENGTH             = 500 * 1024 * 1024, # Tăng lên 500MB để tránh lỗi 413
-    SQLALCHEMY_DATABASE_URI        = os.getenv("DATABASE_URL", os.getenv("SQLALCHEMY_DATABASE_URI", "mysql+pymysql://root:@localhost:3306/ai_tapchi")),
+    SQLALCHEMY_DATABASE_URI        = db_uri,
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     SESSION_COOKIE_HTTPONLY        = True,
     SESSION_COOKIE_SAMESITE        = "Lax",
