@@ -66,7 +66,7 @@ app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     SESSION_COOKIE_HTTPONLY        = True,
     SESSION_COOKIE_SAMESITE        = "Lax",
-    SESSION_COOKIE_SECURE          = False,
+    SESSION_COOKIE_SECURE          = True,
     REMEMBER_COOKIE_HTTPONLY       = True,
     REMEMBER_COOKIE_DURATION       = 0,
 )
@@ -336,6 +336,7 @@ def login_google():
     if (request.host.endswith(".ngrok-free.dev") or 
         request.host.endswith(".ngrok.io") or 
         request.host.endswith(".trycloudflare.com")):
+        request.host.endswith(".vercel.app")):
         scheme = "https"
     else:
         scheme = "http"
