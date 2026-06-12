@@ -44,7 +44,10 @@ upload_folder = "/tmp" if IS_VERCEL else "static/outputs"
 
 # Construct SQLALCHEMY_DATABASE_URI dynamically if separate env vars are provided
 db_uri = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")
-if not db_uri:
+if db_uri:
+    if db_uri.startswith("mysql://"):
+        db_uri = db_uri.replace("mysql://", "mysql+pymysql://", 1)
+else:
     db_user = os.getenv("DB_USER")
     db_pwd = os.getenv("DB_PASSWORD")
     db_host = os.getenv("DB_HOST")
