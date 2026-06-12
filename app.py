@@ -74,6 +74,7 @@ app.config.update(
 # Custom route to serve output files from UPLOAD_FOLDER (critical for Vercel /tmp directory writes)
 @app.route('/static/outputs/<path:filename>')
 def serve_outputs(filename):
+    # Đọc trực tiếp từ UPLOAD_FOLDER (Cho dù là /tmp hay static/outputs đều cân được)
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 _OPENROUTER_KEY       = os.getenv("OPENROUTER_API_KEY", "")
@@ -626,9 +627,9 @@ def sepay_webhook():
 @app.route("/view/<filename>")
 @login_required
 def view_flipbook(filename):
-    # Ensure it only accesses the outputs directory
     safe_filename = os.path.basename(filename)
-    pdf_url = url_for("static", filename=f"outputs/{safe_filename}")
+    # Thay vì dùng url_for static, gọi thẳng sang route serve_outputs bạn định nghĩa ở trên
+    pdf_url = f"/static/outputs/{safe_filename}"
     return render_template("flipbook.html", pdf_url=pdf_url)
 
 
