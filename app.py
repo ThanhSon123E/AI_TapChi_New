@@ -805,17 +805,17 @@ def editor():
             current_user.balance -= pricing
             db.session.commit()
 
-           job_id = f"job_{uid}"
-jobs[job_id] = {"status": "pending"}
-
-# Chạy trực tiếp thay vì thread (Vercel serverless không hỗ trợ background thread)
-background_magazine_job(job_id, current_user.id, docx_paths, pdf_path, journal_meta, template_key)
-
-result = jobs.get(job_id, {})
-if result.get("status") == "done":
-    return jsonify({"status": "done", "pdf_url": result.get("pdf_url")})
-else:
-    return jsonify({"status": "error", "message": result.get("message", "Lỗi không xác định")}), 500
+            job_id = f"job_{uid}"
+            jobs[job_id] = {"status": "pending"}
+            
+            # Start background thread
+            thread = threading.Thread(
+                target=background_magazine_job,
+                args=(job_id, current_user.id, docx_paths, pdf_path, journal_meta, template_key)
+            )
+            thread.start()
+            
+            return jsonify({"status": "pending", "job_id": job_id})
             
         except Exception as e:
             print(f"[ERROR] {traceback.format_exc()}")

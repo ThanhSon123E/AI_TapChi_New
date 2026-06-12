@@ -145,28 +145,25 @@ COL_W    = (USABLE_W - COL_GAP) / 2
 # Được gọi tự động một lần khi import module.
 # ═══════════════════════════════════════════════════════════════
 def _register_fonts():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    FONT_DIR = os.path.join(BASE_DIR, "fonts")
     WIN = "C:/Windows/Fonts"
     LIN = "/usr/share/fonts/truetype"
     defs = {
-        "MgSR":  [f"{FONT_DIR}/NotoSerif-Regular.ttf",     f"{WIN}/times.ttf",   f"{LIN}/liberation/LiberationSerif-Regular.ttf",    f"{LIN}/dejavu/DejaVuSerif.ttf"],
-        "MgSB":  [f"{FONT_DIR}/NotoSerif-Bold.ttf",        f"{WIN}/timesbd.ttf", f"{LIN}/liberation/LiberationSerif-Bold.ttf",       f"{LIN}/dejavu/DejaVuSerif-Bold.ttf"],
-        "MgSI":  [f"{FONT_DIR}/NotoSerif-Italic.ttf",      f"{WIN}/timesi.ttf",  f"{LIN}/liberation/LiberationSerif-Italic.ttf",     f"{LIN}/dejavu/DejaVuSerif-Italic.ttf"],
-        "MgSBI": [f"{FONT_DIR}/NotoSerif-BoldItalic.ttf",  f"{WIN}/timesbi.ttf", f"{LIN}/liberation/LiberationSerif-BoldItalic.ttf", f"{LIN}/dejavu/DejaVuSerif-BoldItalic.ttf"],
-        "MgSS":  [f"{FONT_DIR}/NotoSans-Regular.ttf",      f"{WIN}/arial.ttf",   f"{LIN}/liberation/LiberationSans-Regular.ttf",     f"{LIN}/dejavu/DejaVuSans.ttf"],
-        "MgSSB": [f"{FONT_DIR}/NotoSans-Bold.ttf",         f"{WIN}/arialbd.ttf", f"{LIN}/liberation/LiberationSans-Bold.ttf",        f"{LIN}/dejavu/DejaVuSans-Bold.ttf"],
-        "MgSSI": [f"{FONT_DIR}/NotoSans-Italic.ttf",       f"{WIN}/ariali.ttf",  f"{LIN}/liberation/LiberationSans-Italic.ttf",      f"{LIN}/dejavu/DejaVuSans-Oblique.ttf"],
+        "MgSR":  [f"{WIN}/times.ttf",   f"{LIN}/liberation/LiberationSerif-Regular.ttf",    f"{LIN}/dejavu/DejaVuSerif.ttf"],
+        "MgSB":  [f"{WIN}/timesbd.ttf", f"{LIN}/liberation/LiberationSerif-Bold.ttf",       f"{LIN}/dejavu/DejaVuSerif-Bold.ttf"],
+        "MgSI":  [f"{WIN}/timesi.ttf",  f"{LIN}/liberation/LiberationSerif-Italic.ttf",     f"{LIN}/dejavu/DejaVuSerif-Italic.ttf"],
+        "MgSBI": [f"{WIN}/timesbi.ttf", f"{LIN}/liberation/LiberationSerif-BoldItalic.ttf", f"{LIN}/dejavu/DejaVuSerif-BoldItalic.ttf"],
+        "MgSS":  [f"{WIN}/arial.ttf",   f"{LIN}/liberation/LiberationSans-Regular.ttf",     f"{LIN}/dejavu/DejaVuSans.ttf"],
+        "MgSSB": [f"{WIN}/arialbd.ttf", f"{LIN}/liberation/LiberationSans-Bold.ttf",        f"{LIN}/dejavu/DejaVuSans-Bold.ttf"],
+        "MgSSI": [f"{WIN}/ariali.ttf",  f"{LIN}/liberation/LiberationSans-Italic.ttf",      f"{LIN}/dejavu/DejaVuSans-Oblique.ttf"],
     }
     for name, paths in defs.items():
         for p in paths:
             if os.path.exists(p):
                 try:
                     pdfmetrics.registerFont(TTFont(name, p))
-                    print(f"[FONT] OK: {name} <- {p}")
                     break
-                except Exception as e:
-                    print(f"[FONT] ERR: {name} <- {p}: {e}")
+                except Exception:
+                    pass
 
 _register_fonts()
 _reg = pdfmetrics.getRegisteredFontNames()
