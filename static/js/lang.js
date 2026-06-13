@@ -439,7 +439,15 @@ const translations = {
         "Đã tạo yêu cầu thanh toán.": "Payment request created.",
         "Vui lòng đăng nhập để tiếp tục.": "Please log in to continue.",
         "Tính năng quản lý tạp chí chưa khả dụng.": "Magazine management feature is not available yet.",
-        "Chuỗi JSON Gói nạp tiền không hợp lệ! Vui lòng kiểm tra lại cấu trúc.": "Invalid Top-up Package JSON string! Please check the structure again."
+        "Chuỗi JSON Gói nạp tiền không hợp lệ! Vui lòng kiểm tra lại cấu trúc.": "Invalid Top-up Package JSON string! Please check the structure again.",
+        "Đang tải lên...": "Uploading...",
+        "Đã tải lên thành công": "Uploaded successfully",
+        "Lỗi tải lên": "Upload error",
+        "Thử lại": "Retry",
+        "Đang chờ tải lên...": "Waiting for upload...",
+        "Vui lòng đợi quá trình tải lên tài liệu hoàn tất!": "Please wait for document upload to complete!",
+        "Có tệp tải lên gặp lỗi. Vui lòng tải lại hoặc xóa tệp lỗi để tiếp tục.": "Some files failed to upload. Please retry or remove them to continue.",
+        "Lỗi khi tải lên file: ": "Error uploading file: "
     },
     // Vietnamese translations (for elements written in English in the HTML)
     vi: {
@@ -830,7 +838,15 @@ const translations = {
         "Payment request created.": "Đã tạo yêu cầu thanh toán.",
         "Please log in to continue.": "Vui lòng đăng nhập để tiếp tục.",
         "Magazine management feature is not available yet.": "Tính năng quản lý tạp chí chưa khả dụng.",
-        "Invalid Top-up Package JSON string! Please check the structure again.": "Chuỗi JSON Gói nạp tiền không hợp lệ! Vui lòng kiểm tra lại cấu trúc."
+        "Invalid Top-up Package JSON string! Please check the structure again.": "Chuỗi JSON Gói nạp tiền không hợp lệ! Vui lòng kiểm tra lại cấu trúc.",
+        "Uploading...": "Đang tải lên...",
+        "Uploaded successfully": "Đã tải lên thành công",
+        "Upload error": "Lỗi tải lên",
+        "Retry": "Thử lại",
+        "Waiting for upload...": "Đang chờ tải lên...",
+        "Please wait for document upload to complete!": "Vui lòng đợi quá trình tải lên tài liệu hoàn tất!",
+        "Some files failed to upload. Please retry or remove them to continue.": "Có tệp tải lên gặp lỗi. Vui lòng tải lại hoặc xóa tệp lỗi để tiếp tục.",
+        "Error uploading file: ": "Lỗi khi tải lên file: "
     }
 };
 

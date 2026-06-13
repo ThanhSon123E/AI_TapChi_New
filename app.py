@@ -66,7 +66,7 @@ app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     SESSION_COOKIE_HTTPONLY        = True,
     SESSION_COOKIE_SAMESITE        = "Lax",
-    SESSION_COOKIE_SECURE          = True,
+    SESSION_COOKIE_SECURE          = IS_VERCEL,
     REMEMBER_COOKIE_HTTPONLY       = True,
     REMEMBER_COOKIE_DURATION       = 0,
 )
@@ -74,7 +74,6 @@ app.config.update(
 # Custom route to serve output files from UPLOAD_FOLDER (critical for Vercel /tmp directory writes)
 @app.route('/static/outputs/<path:filename>')
 def serve_outputs(filename):
-    # Đọc trực tiếp từ UPLOAD_FOLDER (Cho dù là /tmp hay static/outputs đều cân được)
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 _OPENROUTER_KEY       = os.getenv("OPENROUTER_API_KEY", "")
@@ -488,17 +487,11 @@ def cancel_payment(payment_code):
     db.session.commit()
     return jsonify({"ok": True})
 
-@app.route("/api/extract-docx-metadata", methods=["POST"])
-@login_required
-def extract_docx_metadata():
-    file = request.files.get("file")
-    if not file or not file.filename.endswith(".docx"):
-        return jsonify({"success": False, "message": "File không hợp lệ"}), 400
-    
+def extract_author_from_docx(file_path_or_stream):
     try:
         from docx import Document
         import re
-        doc = Document(file)
+        doc = Document(file_path_or_stream)
         
         # 1. Thử lấy từ core_properties
         author = ""
@@ -535,13 +528,103 @@ def extract_docx_metadata():
                     if possible_author and possible_author.lower().strip() not in invalid_authors and len(possible_author) < 50:
                         author = possible_author
                         break
+        return author
+    except Exception as e:
+        print(f"[EXTRACT AUTHOR ERROR]: {e}")
+        return ""
+
+@app.route("/api/extract-docx-metadata", methods=["POST"])
+@login_required
+def extract_docx_metadata():
+    file = request.files.get("file")
+    if not file or not file.filename.endswith(".docx"):
+        return jsonify({"success": False, "message": "File không hợp lệ"}), 400
+    
+    author = extract_author_from_docx(file)
+    return jsonify({
+        "success": True,
+        "author": author
+    })
+
+@app.route("/api/upload-chunk", methods=["POST"])
+@login_required
+def upload_chunk():
+    try:
+        file_id = request.form.get("file_id")
+        chunk_index = request.form.get("chunk_index")
+        total_chunks = request.form.get("total_chunks")
+        filename = request.form.get("filename")
+        chunk_file = request.files.get("file")
+
+        if not all([file_id, chunk_index, total_chunks, filename, chunk_file]):
+            return jsonify({"success": False, "message": "Thiếu tham số bắt buộc"}), 400
+
+        chunk_index = int(chunk_index)
+        total_chunks = int(total_chunks)
+
+        # Bảo mật tên file
+        from werkzeug.utils import secure_filename
+        sec_filename = secure_filename(filename)
+        if not sec_filename.lower().endswith(".docx"):
+            return jsonify({"success": False, "message": "Chỉ cho phép file .docx"}), 400
+
+        import re
+        if not re.match(r"^[a-zA-Z0-9_\-]+$", file_id):
+            return jsonify({"success": False, "message": "file_id không hợp lệ"}), 400
+
+        chunks_dir = os.path.join(app.config["UPLOAD_FOLDER"], "chunks", file_id)
+        os.makedirs(chunks_dir, exist_ok=True)
+
+        chunk_path = os.path.join(chunks_dir, f"chunk_{chunk_index}")
+        chunk_file.save(chunk_path)
+
+        # Kiểm tra xem đã nhận đủ tất cả các chunk chưa
+        all_chunks_exist = True
+        for i in range(total_chunks):
+            if not os.path.exists(os.path.join(chunks_dir, f"chunk_{i}")):
+                all_chunks_exist = False
+                break
+
+        if all_chunks_exist:
+            # Tiến hành ghép file
+            uid = str(uuid.uuid4())[:8]
+            merged_filename = f"{uid}_chunked_{sec_filename}"
+            merged_filepath = os.path.join(app.config["UPLOAD_FOLDER"], merged_filename)
+
+            with open(merged_filepath, "wb") as merged_file:
+                for i in range(total_chunks):
+                    chunk_p = os.path.join(chunks_dir, f"chunk_{i}")
+                    with open(chunk_p, "rb") as cf:
+                        merged_file.write(cf.read())
+                    try:
+                        os.remove(chunk_p)
+                    except Exception as e:
+                        print(f"[WARN] Không thể xóa chunk tạm {chunk_p}: {e}")
+
+            try:
+                os.rmdir(chunks_dir)
+            except Exception as e:
+                print(f"[WARN] Không thể xóa thư mục chunk tạm {chunks_dir}: {e}")
+
+            # Trích xuất tác giả sau khi ghép xong
+            author = extract_author_from_docx(merged_filepath)
+
+            return jsonify({
+                "success": True,
+                "status": "completed",
+                "completed": True,
+                "filename": merged_filename,
+                "author": author
+            })
         
         return jsonify({
             "success": True,
-            "author": author
+            "status": "chunk_uploaded",
+            "completed": False
         })
+
     except Exception as e:
-        print(f"[METADATA EXTRACT ERROR]: {e}")
+        print(f"[CHUNK UPLOAD ERROR]: {traceback.format_exc()}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route("/webhook/sepay", methods=["POST", "GET"])
@@ -627,9 +710,9 @@ def sepay_webhook():
 @app.route("/view/<filename>")
 @login_required
 def view_flipbook(filename):
+    # Ensure it only accesses the outputs directory
     safe_filename = os.path.basename(filename)
-    # Thay vì dùng url_for static, gọi thẳng sang route serve_outputs bạn định nghĩa ở trên
-    pdf_url = f"/static/outputs/{safe_filename}"
+    pdf_url = url_for("static", filename=f"outputs/{safe_filename}")
     return render_template("flipbook.html", pdf_url=pdf_url)
 
 
@@ -729,29 +812,38 @@ def editor():
                 }), 400
 
             print("[DEBUG POST] Đang đọc files và form data...")
-            files = request.files.getlist("files")
+            uploaded_files = request.form.getlist("uploaded_files")
             chapter_titles = request.form.getlist("chapter_titles")
             chapter_descs = request.form.getlist("chapter_descs")
             
-            if not files or len(files) == 0:
-                return jsonify({"status": "error", "message": "Vui lòng tải lên ít nhất 1 file .docx!"}), 400
-            
-            if len(files) > 10:
-                return jsonify({"status": "error", "message": "Chỉ cho phép tải lên tối đa 10 file Word!"}), 400
-            
             os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
             uid = str(uuid.uuid4())[:8]
-            
             docx_paths = []
-            for i, file in enumerate(files):
-                if file and file.filename.endswith(".docx"):
-                    safe_name = f"{uid}_ch{i}_{file.filename}"
+
+            if uploaded_files:
+                if len(uploaded_files) > 10:
+                    return jsonify({"status": "error", "message": "Chỉ cho phép tải lên tối đa 10 file Word!"}), 400
+                
+                for filename in uploaded_files:
+                    safe_name = os.path.basename(filename)
                     dpath = os.path.join(app.config["UPLOAD_FOLDER"], safe_name)
-                    file.save(dpath)
-                    docx_paths.append(dpath)
-            
+                    if os.path.exists(dpath):
+                        docx_paths.append(dpath)
+            else:
+                files = request.files.getlist("files")
+                if files and len(files) > 0 and files[0].filename != "":
+                    if len(files) > 10:
+                        return jsonify({"status": "error", "message": "Chỉ cho phép tải lên tối đa 10 file Word!"}), 400
+                    
+                    for i, file in enumerate(files):
+                        if file and file.filename.endswith(".docx"):
+                            safe_name = f"{uid}_ch{i}_{file.filename}"
+                            dpath = os.path.join(app.config["UPLOAD_FOLDER"], safe_name)
+                            file.save(dpath)
+                            docx_paths.append(dpath)
+
             if not docx_paths:
-                return jsonify({"status": "error", "message": "Không tìm thấy file .docx hợp lệ!"}), 400
+                return jsonify({"status": "error", "message": "Vui lòng tải lên ít nhất 1 file .docx hợp lệ!"}), 400
             
             cover_path = None
             cover_b64 = request.form.get("cover_base64")

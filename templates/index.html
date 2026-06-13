@@ -3940,6 +3940,104 @@ In tại Công ty TNHH MTV</textarea>
     }
 
     let selectedFiles = [];
+
+    function uploadFileChunks(item) {
+      const file = item.file;
+      const chunkSize = 5 * 1024 * 1024; // 5MB
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      const fileId = item.id;
+
+      item.uploadStatus = 'uploading';
+      item.uploadProgress = 0;
+      renderFileList();
+
+      let chunkIndex = 0;
+
+      function uploadNextChunk() {
+        const exists = selectedFiles.some(f => f.id === fileId);
+        if (!exists) {
+          if (item.xhr) {
+            item.xhr.abort();
+          }
+          return;
+        }
+
+        if (item.uploadStatus === 'error') return;
+
+        const start = chunkIndex * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const chunk = file.slice(start, end);
+
+        const formData = new FormData();
+        formData.append('file_id', fileId);
+        formData.append('chunk_index', chunkIndex);
+        formData.append('total_chunks', totalChunks);
+        formData.append('filename', file.name);
+        formData.append('file', chunk);
+
+        const xhr = new XMLHttpRequest();
+        item.xhr = xhr;
+
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const chunkProgress = e.loaded / e.total;
+            const totalProgress = Math.round(((chunkIndex + chunkProgress) / totalChunks) * 100);
+            item.uploadProgress = totalProgress;
+            updateFileProgressUI(item.id, totalProgress);
+          }
+        });
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+              try {
+                const res = JSON.parse(xhr.responseText);
+                if (res.success) {
+                  if (res.completed) {
+                    item.uploadStatus = 'success';
+                    item.uploadProgress = 100;
+                    item.tempFilename = res.filename;
+                    if (res.author) {
+                      item.desc = res.author + " : " + (item.desc ? item.desc.split(" : ").slice(1).join(" : ") : "");
+                    }
+                    renderFileList();
+                  } else {
+                    chunkIndex++;
+                    uploadNextChunk();
+                  }
+                } else {
+                  handleUploadError(item, res.message || 'Lỗi upload chunk');
+                }
+              } catch (err) {
+                handleUploadError(item, 'Lỗi xử lý phản hồi từ server');
+              }
+            } else {
+              handleUploadError(item, `Server error: ${xhr.status}`);
+            }
+          }
+        };
+
+        xhr.open('POST', '/api/upload-chunk', true);
+        xhr.send(formData);
+      }
+
+      uploadNextChunk();
+    }
+
+    function handleUploadError(item, errMsg) {
+      item.uploadStatus = 'error';
+      item.uploadProgress = 0;
+      renderFileList();
+      alert(t('Lỗi khi tải lên file: ') + errMsg);
+    }
+
+    function updateFileProgressUI(itemId, percent) {
+      const bar = document.getElementById(`progress-bar-${itemId}`);
+      const text = document.getElementById(`progress-text-${itemId}`);
+      if (bar) bar.style.width = `${percent}%`;
+      if (text) text.textContent = `${percent}%`;
+    }
+
     function handleWordFiles(filesList) {
       const files = Array.from(filesList);
       if (selectedFiles.length + files.length > 10) {
@@ -3947,8 +4045,8 @@ In tại Công ty TNHH MTV</textarea>
         return;
       }
       files.forEach(f => {
-        if (f.size > 30 * 1024 * 1024) {
-          alert(t("Tệp quá lớn (>30MB).").replace("Tệp", `"${f.name}"`));
+        if (f.size > 100 * 1024 * 1024) {
+          alert(t("Tệp quá lớn (>100MB).").replace("Tệp", `"${f.name}"`));
           return;
         }
         const fileItem = {
@@ -3956,25 +4054,14 @@ In tại Công ty TNHH MTV</textarea>
           id: Math.random().toString(36).substr(2, 9),
           title: f.name.replace(/\.[^/.]+$/, ""),
           author: "",
-          desc: ""
+          desc: "",
+          uploadProgress: 0,
+          uploadStatus: 'pending',
+          tempFilename: null,
+          xhr: null
         };
         selectedFiles.push(fileItem);
-
-        // Gọi API để phân tích tác giả từ file Word
-        const formData = new FormData();
-        formData.append("file", f);
-        fetch("/api/extract-docx-metadata", {
-          method: "POST",
-          body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.author) {
-            fileItem.desc = data.author + " : ";
-            renderFileList();
-          }
-        })
-        .catch(err => console.error("Lỗi trích xuất tác giả:", err));
+        uploadFileChunks(fileItem);
       });
       renderFileList();
     }
@@ -4003,6 +4090,40 @@ In tại Công ty TNHH MTV</textarea>
         div.style.border = '1px solid var(--border)';
         div.style.background = 'rgba(255,255,255,0.03)';
 
+        let uploadStatusHtml = '';
+        if (item.uploadStatus === 'uploading') {
+          uploadStatusHtml = `
+            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-2);">
+                <span><i class="fas fa-spinner fa-spin"></i> ${t('Đang tải lên...')}</span>
+                <span id="progress-text-${item.id}">${item.uploadProgress}%</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                <div id="progress-bar-${item.id}" style="width: ${item.uploadProgress}%; height: 100%; background: var(--gold); transition: width 0.2s ease;"></div>
+              </div>
+            </div>
+          `;
+        } else if (item.uploadStatus === 'success') {
+          uploadStatusHtml = `
+            <div style="margin-top: 10px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: #10B981; font-weight: 600;">
+              <i class="fas fa-check-circle"></i> ${t('Đã tải lên thành công')}
+            </div>
+          `;
+        } else if (item.uploadStatus === 'error') {
+          uploadStatusHtml = `
+            <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
+              <span style="color: #EF4444; font-weight: 600;"><i class="fas fa-exclamation-circle"></i> ${t('Lỗi tải lên')}</span>
+              <button type="button" onclick="uploadFileChunks(selectedFiles[${index}])" style="background: none; border: none; color: var(--gold); cursor: pointer; font-size: 11px; text-decoration: underline; padding: 0;"><i class="fas fa-redo"></i> ${t('Thử lại')}</button>
+            </div>
+          `;
+        } else {
+          uploadStatusHtml = `
+            <div style="margin-top: 10px; font-size: 11px; color: var(--text-3);">
+              <i class="fas fa-clock"></i> ${t('Đang chờ tải lên...')}
+            </div>
+          `;
+        }
+
         div.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <span style="font-size:11px; color:var(--gold); font-weight:800; text-transform:uppercase; letter-spacing:1px;">${t('CHƯƠNG')} ${index + 1}</span>
@@ -4028,6 +4149,7 @@ In tại Công ty TNHH MTV</textarea>
           <div style="font-size:10px; color:var(--text-3); margin-top:8px; display:flex; align-items:center; gap:5px;">
             <i class="fas fa-file-word"></i> ${item.file.name}
           </div>
+          ${uploadStatusHtml}
         `;
         container.appendChild(div);
       });
@@ -4043,6 +4165,10 @@ In tại Công ty TNHH MTV</textarea>
     }
 
     function removeFile(index) {
+      const item = selectedFiles[index];
+      if (item && item.xhr) {
+        item.xhr.abort();
+      }
       selectedFiles.splice(index, 1);
       renderFileList();
     }
@@ -4145,13 +4271,26 @@ In tại Công ty TNHH MTV</textarea>
         return;
       }
 
+      // Kiểm tra trạng thái upload của các file
+      const isUploading = selectedFiles.some(item => item.uploadStatus === 'uploading' || item.uploadStatus === 'pending');
+      if (isUploading) {
+        alert(t("Please wait for document upload to complete!"));
+        return;
+      }
+
+      const hasError = selectedFiles.some(item => item.uploadStatus === 'error');
+      if (hasError) {
+        alert(t("Some files failed to upload. Please retry or remove them to continue."));
+        return;
+      }
+
       const form = e.target;
       const formData = new FormData(form);
 
       formData.delete('files');
 
       selectedFiles.forEach((item, i) => {
-        formData.append('files', item.file);
+        formData.append('uploaded_files', item.tempFilename);
         formData.append('chapter_titles', item.title);
         formData.append('chapter_descs', item.desc);
       });
