@@ -565,8 +565,9 @@ def upload_chunk():
         # Bảo mật tên file
         from werkzeug.utils import secure_filename
         sec_filename = secure_filename(filename)
-        if not sec_filename.lower().endswith(".docx"):
-            return jsonify({"success": False, "message": "Chỉ cho phép file .docx"}), 400
+        allowed_exts = (".docx", ".pdf")
+        if not sec_filename.lower().endswith(allowed_exts):
+            return jsonify({"success": False, "message": "Chỉ cho phép file .docx hoặc .pdf"}), 400
 
         import re
         if not re.match(r"^[a-zA-Z0-9_\-]+$", file_id):
@@ -606,8 +607,10 @@ def upload_chunk():
             except Exception as e:
                 print(f"[WARN] Không thể xóa thư mục chunk tạm {chunks_dir}: {e}")
 
-            # Trích xuất tác giả sau khi ghép xong
-            author = extract_author_from_docx(merged_filepath)
+            # Trích xuất tác giả sau khi ghép xong (chỉ áp dụng cho file .docx)
+            author = ""
+            if sec_filename.lower().endswith(".docx"):
+                author = extract_author_from_docx(merged_filepath)
 
             return jsonify({
                 "success": True,
@@ -930,8 +933,41 @@ def history():
 @app.route("/upload_pdf", methods=["POST"])
 @login_required
 def upload_pdf():
+    # Thử lấy file đã chunked upload trước
+    uploaded_filename = request.form.get("uploaded_filename")
+    
+    if uploaded_filename:
+        try:
+            safe_name = os.path.basename(uploaded_filename)
+            pdf_path = os.path.join(app.config["UPLOAD_FOLDER"], safe_name)
+            if not os.path.exists(pdf_path) or not safe_name.lower().endswith(".pdf"):
+                return jsonify({"success": False, "message": "File PDF không tồn tại trên server hoặc không hợp lệ!"}), 400
+            
+            # Tiêu đề hiển thị (cắt bỏ phần tiền tố uuid_chunked_)
+            display_title = safe_name
+            parts = safe_name.split("_chunked_", 1)
+            if len(parts) > 1:
+                display_title = parts[1]
+                
+            new_history = MagazineHistory(
+                user_id=current_user.id,
+                title=display_title,
+                template="Tải Lên PDF",
+                pdf_filename=safe_name
+            )
+            db.session.add(new_history)
+            db.session.commit()
+            
+            pdf_url = url_for("static", filename=f"outputs/{safe_name}")
+            return jsonify({"success": True, "redirect_url": url_for("editor", pdf_url=pdf_url)})
+        except Exception as e:
+            return jsonify({"success": False, "message": f"Lỗi lưu lịch sử PDF: {str(e)}"}), 500
+            
+    # Cách cũ: Nhận file trực tiếp (Dành cho local hoặc file nhỏ)
     file = request.files.get("pdf_file")
     if not file or not file.filename.lower().endswith(".pdf"):
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": "Vui lòng tải lên file .pdf!"}), 400
         flash("Please upload a .pdf file!", "error")
         return redirect(url_for("editor"))
     
@@ -953,8 +989,12 @@ def upload_pdf():
         
         flash("PDF uploaded successfully for flipbook view!", "success")
         pdf_url = url_for("static", filename=f"outputs/{pdf_filename}")
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": True, "redirect_url": url_for("editor", pdf_url=pdf_url)})
         return redirect(url_for("editor", pdf_url=pdf_url))
     except Exception as e:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": str(e)}), 500
         flash(f"PDF upload error: {str(e)}", "error")
         return redirect(url_for("editor"))
 
