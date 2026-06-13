@@ -3161,7 +3161,7 @@ In tại Công ty TNHH MTV</textarea>
             <h3 data-i18n="Upload PDF to View">📄 Upload PDF to View</h3>
             <p style="font-size: 13px; color: var(--text-2); margin-bottom: 12px;" data-i18n="Upload the magazine PDF you downloaded to view it as a flipbook.">Upload the magazine PDF you
               downloaded to view it as a flipbook.</p>
-            <form action="{{ url_for('upload_pdf') }}" method="POST" enctype="multipart/form-data"
+            <form id="pdfUploadForm" action="{{ url_for('upload_pdf') }}" method="POST" enctype="multipart/form-data"
               style="display:flex; flex-direction:column; gap:10px;">
               <div class="file-drop" id="pdfDropZone" style="padding: 20px 10px; margin-bottom: 0;">
                 <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf" required>
@@ -4494,6 +4494,147 @@ In tại Công ty TNHH MTV</textarea>
       } catch (e) {
         alert('Connection error during deletion.');
       }
+    }
+
+    // Xử lý upload PDF bằng Chunked Upload để tránh lỗi 413 trên Vercel
+    const pdfForm = document.getElementById('pdfUploadForm');
+    if (pdfForm) {
+      pdfForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('pdfFileInput');
+        const file = fileInput.files[0];
+        if (!file) return;
+        
+        const chunkSize = 2 * 1024 * 1024; // 2MB chunk
+        const totalChunks = Math.ceil(file.size / chunkSize);
+        const fileId = 'pdf_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+        
+        // Disable nút submit và hiển thị trạng thái bằng SweetAlert
+        const submitBtn = pdfForm.querySelector('button[type="submit"]');
+        const originalBtnHTML = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        
+        let swalAlert = null;
+        if (typeof SwalPremium !== 'undefined') {
+          swalAlert = SwalPremium;
+        } else if (typeof Swal !== 'undefined') {
+          swalAlert = Swal;
+        }
+        
+        let progressPopup = null;
+        if (swalAlert) {
+          progressPopup = swalAlert.fire({
+            title: t('Đang tải lên PDF...'),
+            html: `
+              <div style="margin: 15px 0;">
+                <div style="background: var(--surface-2); border-radius: 10px; height: 10px; width: 100%; overflow: hidden;">
+                  <div id="pdf-upload-progress-bar" style="background: var(--gold); width: 0%; height: 100%; transition: width 0.3s;"></div>
+                </div>
+                <div id="pdf-upload-progress-text" style="font-size: 13px; color: var(--text-2); margin-top: 8px; text-align: center;">0%</div>
+              </div>
+            `,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+              swalAlert.showLoading();
+            }
+          });
+        }
+        
+        const updateProgress = (percent) => {
+          const bar = document.getElementById('pdf-upload-progress-bar');
+          const txt = document.getElementById('pdf-upload-progress-text');
+          if (bar) bar.style.width = percent + '%';
+          if (txt) txt.textContent = percent + '%';
+          submitBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg> ${percent}%`;
+        };
+
+        try {
+          let mergedFilename = null;
+          
+          for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+            const start = chunkIndex * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+            
+            const chunkFormData = new FormData();
+            chunkFormData.append('file_id', fileId);
+            chunkFormData.append('chunk_index', chunkIndex);
+            chunkFormData.append('total_chunks', totalChunks);
+            chunkFormData.append('filename', file.name);
+            chunkFormData.append('file', chunk);
+            
+            const uploadRes = await fetch('/api/upload-chunk', {
+              method: 'POST',
+              body: chunkFormData
+            });
+            
+            if (!uploadRes.ok) {
+              throw new Error(t('Lỗi upload chunk ' + chunkIndex));
+            }
+            
+            const result = await uploadRes.json();
+            if (!result.success) {
+              throw new Error(result.message || t('Lỗi upload chunk'));
+            }
+            
+            const progressPercent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+            updateProgress(progressPercent);
+            
+            if (result.completed) {
+              mergedFilename = result.filename;
+            }
+          }
+          
+          if (!mergedFilename) {
+            throw new Error(t('Không nhận được tên file đã ghép từ server!'));
+          }
+          
+          // Sau khi upload thành công, gửi file_name lên /upload_pdf qua AJAX POST
+          if (progressPopup) {
+            swalAlert.update({
+              title: t('Đang xử lý PDF...'),
+              html: t('Hệ thống đang chuẩn bị chế độ sách lật...')
+            });
+          }
+          
+          const saveRes = await fetch('/upload_pdf', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({
+              'uploaded_filename': mergedFilename
+            })
+          });
+          
+          const saveResult = await saveRes.json();
+          if (saveResult.success) {
+            if (swalAlert) {
+              swalAlert.close();
+            }
+            window.location.href = saveResult.redirect_url;
+          } else {
+            throw new Error(saveResult.message || t('Lỗi lưu lịch sử PDF'));
+          }
+          
+        } catch (error) {
+          console.error(error);
+          if (swalAlert) {
+            swalAlert.fire({
+              icon: 'error',
+              title: t('Lỗi tải lên PDF'),
+              text: error.message || t('Đã xảy ra lỗi không xác định')
+            });
+          } else {
+            alert(t('Lỗi tải lên PDF: ') + error.message);
+          }
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHTML;
+        }
+      });
     }
   </script>
 
