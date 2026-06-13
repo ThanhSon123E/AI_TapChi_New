@@ -3943,7 +3943,7 @@ In tại Công ty TNHH MTV</textarea>
 
     function uploadFileChunks(item) {
       const file = item.file;
-      const chunkSize = 5 * 1024 * 1024; // 5MB
+      const chunkSize = 2 * 1024 * 1024; // 2MB (Tránh giới hạn 4.5MB payload của Vercel)
       const totalChunks = Math.ceil(file.size / chunkSize);
       const fileId = item.id;
 

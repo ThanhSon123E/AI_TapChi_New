@@ -639,7 +639,7 @@
         });
 
         // Override mặc định window.alert bằng SweetAlert2 tuyệt đẹp
-        const originalAlert = window.alert;
+        var originalAlert = window.alert;
         window.alert = function(message) {
             SwalPremium.fire({
                 title: typeof t === 'function' ? t('Notification') : 'Thông báo',
