@@ -151,57 +151,50 @@ def _register_fonts():
     
     defs = {
         "MgSR":  [
-            os.path.join(PROJECT_FONTS, "times.ttf"),
-            os.path.join(PROJECT_FONTS, "Times.ttf"),
-            os.path.join(PROJECT_FONTS, "times-new-roman.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSerif-Regular.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSerif Regular.ttf"),
             f"{WIN}/times.ttf",
             f"{LIN}/liberation/LiberationSerif-Regular.ttf",
             f"{LIN}/dejavu/DejaVuSerif.ttf"
         ],
         "MgSB":  [
-            os.path.join(PROJECT_FONTS, "timesbd.ttf"),
-            os.path.join(PROJECT_FONTS, "TimesBD.ttf"),
-            os.path.join(PROJECT_FONTS, "times-new-roman-bold.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSerif-Bold.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSerif Bold.ttf"),
             f"{WIN}/timesbd.ttf",
             f"{LIN}/liberation/LiberationSerif-Bold.ttf",
             f"{LIN}/dejavu/DejaVuSerif-Bold.ttf"
         ],
         "MgSI":  [
-            os.path.join(PROJECT_FONTS, "timesi.ttf"),
-            os.path.join(PROJECT_FONTS, "TimesI.ttf"),
-            os.path.join(PROJECT_FONTS, "times-new-roman-italic.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSerif-Italic.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSerif Italic.ttf"),
             f"{WIN}/timesi.ttf",
             f"{LIN}/liberation/LiberationSerif-Italic.ttf",
             f"{LIN}/dejavu/DejaVuSerif-Italic.ttf"
         ],
         "MgSBI": [
-            os.path.join(PROJECT_FONTS, "timesbi.ttf"),
-            os.path.join(PROJECT_FONTS, "TimesBI.ttf"),
-            os.path.join(PROJECT_FONTS, "times-new-roman-bold-italic.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSerif-BoldItalic.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSerif BoldItalic.ttf"),
             f"{WIN}/timesbi.ttf",
             f"{LIN}/liberation/LiberationSerif-BoldItalic.ttf",
             f"{LIN}/dejavu/DejaVuSerif-BoldItalic.ttf"
         ],
         "MgSS":  [
-            os.path.join(PROJECT_FONTS, "arial.ttf"),
-            os.path.join(PROJECT_FONTS, "Arial.ttf"),
-            os.path.join(PROJECT_FONTS, "arial-regular.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSans-Regular.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSans Regular.ttf"),
             f"{WIN}/arial.ttf",
             f"{LIN}/liberation/LiberationSans-Regular.ttf",
             f"{LIN}/dejavu/DejaVuSans.ttf"
         ],
         "MgSSB": [
-            os.path.join(PROJECT_FONTS, "arialbd.ttf"),
-            os.path.join(PROJECT_FONTS, "ArialBD.ttf"),
-            os.path.join(PROJECT_FONTS, "arial-bold.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSans-Bold.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSans Bold.ttf"),
             f"{WIN}/arialbd.ttf",
             f"{LIN}/liberation/LiberationSans-Bold.ttf",
             f"{LIN}/dejavu/DejaVuSans-Bold.ttf"
         ],
         "MgSSI": [
-            os.path.join(PROJECT_FONTS, "ariali.ttf"),
-            os.path.join(PROJECT_FONTS, "ArialI.ttf"),
-            os.path.join(PROJECT_FONTS, "arial-italic.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSans-Italic.ttf"),
+            os.path.join(PROJECT_FONTS, "NotoSans Italic.ttf"),
             f"{WIN}/ariali.ttf",
             f"{LIN}/liberation/LiberationSans-Italic.ttf",
             f"{LIN}/dejavu/DejaVuSans-Oblique.ttf"
