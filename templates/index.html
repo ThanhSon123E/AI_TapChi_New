@@ -4285,9 +4285,21 @@ In tại Công ty TNHH MTV</textarea>
       }
 
       const form = e.target;
-      const formData = new FormData(form);
+      
+      // Khởi tạo FormData mới tinh để loại bỏ hoàn toàn các file nhị phân lớn dư thừa
+      const formData = new FormData();
 
-      formData.delete('files');
+      // Copy các trường text từ form gốc sang
+      const textFields = [
+        'template_key', 'author_name', 'magazine_title', 'magazine_subtitle', 'pub_date',
+        'council_info', 'editorial_board', 'office_info', 'reps_info', 'license_info', 'price'
+      ];
+      textFields.forEach(field => {
+        const el = form.querySelector(`[name="${field}"]`);
+        if (el) {
+          formData.append(field, el.value);
+        }
+      });
 
       selectedFiles.forEach((item, i) => {
         formData.append('uploaded_files', item.tempFilename);
@@ -4297,12 +4309,12 @@ In tại Công ty TNHH MTV</textarea>
 
       console.log("[JS] Đang đóng gói dữ liệu hình ảnh (Base64)...");
       const coverCanvas = document.getElementById('coverCanvas');
-      // Tối ưu mạnh chất lượng ảnh xuống 0.4 để tránh lỗi nghẽn cổ chai Base64 trên Local
-      formData.set('cover_base64', coverCanvas.toDataURL('image/jpeg', 0.4));
+      // Nén ảnh chất lượng xuống 0.35 để giảm tối đa dung lượng Base64 mà vẫn giữ được độ nét
+      formData.set('cover_base64', coverCanvas.toDataURL('image/jpeg', 0.35));
 
       const backCanvas = document.getElementById('backCoverCanvas');
       if (backCanvas) {
-        formData.set('back_cover_base64', backCanvas.toDataURL('image/jpeg', 0.4));
+        formData.set('back_cover_base64', backCanvas.toDataURL('image/jpeg', 0.35));
       }
       console.log("[JS] Hoàn tất đóng gói dữ liệu, chuẩn bị gửi Fetch...");
 
