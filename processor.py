@@ -147,14 +147,65 @@ COL_W    = (USABLE_W - COL_GAP) / 2
 def _register_fonts():
     WIN = "C:/Windows/Fonts"
     LIN = "/usr/share/fonts/truetype"
+    PROJECT_FONTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+    
     defs = {
-        "MgSR":  [f"{WIN}/times.ttf",   f"{LIN}/liberation/LiberationSerif-Regular.ttf",    f"{LIN}/dejavu/DejaVuSerif.ttf"],
-        "MgSB":  [f"{WIN}/timesbd.ttf", f"{LIN}/liberation/LiberationSerif-Bold.ttf",       f"{LIN}/dejavu/DejaVuSerif-Bold.ttf"],
-        "MgSI":  [f"{WIN}/timesi.ttf",  f"{LIN}/liberation/LiberationSerif-Italic.ttf",     f"{LIN}/dejavu/DejaVuSerif-Italic.ttf"],
-        "MgSBI": [f"{WIN}/timesbi.ttf", f"{LIN}/liberation/LiberationSerif-BoldItalic.ttf", f"{LIN}/dejavu/DejaVuSerif-BoldItalic.ttf"],
-        "MgSS":  [f"{WIN}/arial.ttf",   f"{LIN}/liberation/LiberationSans-Regular.ttf",     f"{LIN}/dejavu/DejaVuSans.ttf"],
-        "MgSSB": [f"{WIN}/arialbd.ttf", f"{LIN}/liberation/LiberationSans-Bold.ttf",        f"{LIN}/dejavu/DejaVuSans-Bold.ttf"],
-        "MgSSI": [f"{WIN}/ariali.ttf",  f"{LIN}/liberation/LiberationSans-Italic.ttf",      f"{LIN}/dejavu/DejaVuSans-Oblique.ttf"],
+        "MgSR":  [
+            os.path.join(PROJECT_FONTS, "times.ttf"),
+            os.path.join(PROJECT_FONTS, "Times.ttf"),
+            os.path.join(PROJECT_FONTS, "times-new-roman.ttf"),
+            f"{WIN}/times.ttf",
+            f"{LIN}/liberation/LiberationSerif-Regular.ttf",
+            f"{LIN}/dejavu/DejaVuSerif.ttf"
+        ],
+        "MgSB":  [
+            os.path.join(PROJECT_FONTS, "timesbd.ttf"),
+            os.path.join(PROJECT_FONTS, "TimesBD.ttf"),
+            os.path.join(PROJECT_FONTS, "times-new-roman-bold.ttf"),
+            f"{WIN}/timesbd.ttf",
+            f"{LIN}/liberation/LiberationSerif-Bold.ttf",
+            f"{LIN}/dejavu/DejaVuSerif-Bold.ttf"
+        ],
+        "MgSI":  [
+            os.path.join(PROJECT_FONTS, "timesi.ttf"),
+            os.path.join(PROJECT_FONTS, "TimesI.ttf"),
+            os.path.join(PROJECT_FONTS, "times-new-roman-italic.ttf"),
+            f"{WIN}/timesi.ttf",
+            f"{LIN}/liberation/LiberationSerif-Italic.ttf",
+            f"{LIN}/dejavu/DejaVuSerif-Italic.ttf"
+        ],
+        "MgSBI": [
+            os.path.join(PROJECT_FONTS, "timesbi.ttf"),
+            os.path.join(PROJECT_FONTS, "TimesBI.ttf"),
+            os.path.join(PROJECT_FONTS, "times-new-roman-bold-italic.ttf"),
+            f"{WIN}/timesbi.ttf",
+            f"{LIN}/liberation/LiberationSerif-BoldItalic.ttf",
+            f"{LIN}/dejavu/DejaVuSerif-BoldItalic.ttf"
+        ],
+        "MgSS":  [
+            os.path.join(PROJECT_FONTS, "arial.ttf"),
+            os.path.join(PROJECT_FONTS, "Arial.ttf"),
+            os.path.join(PROJECT_FONTS, "arial-regular.ttf"),
+            f"{WIN}/arial.ttf",
+            f"{LIN}/liberation/LiberationSans-Regular.ttf",
+            f"{LIN}/dejavu/DejaVuSans.ttf"
+        ],
+        "MgSSB": [
+            os.path.join(PROJECT_FONTS, "arialbd.ttf"),
+            os.path.join(PROJECT_FONTS, "ArialBD.ttf"),
+            os.path.join(PROJECT_FONTS, "arial-bold.ttf"),
+            f"{WIN}/arialbd.ttf",
+            f"{LIN}/liberation/LiberationSans-Bold.ttf",
+            f"{LIN}/dejavu/DejaVuSans-Bold.ttf"
+        ],
+        "MgSSI": [
+            os.path.join(PROJECT_FONTS, "ariali.ttf"),
+            os.path.join(PROJECT_FONTS, "ArialI.ttf"),
+            os.path.join(PROJECT_FONTS, "arial-italic.ttf"),
+            f"{WIN}/ariali.ttf",
+            f"{LIN}/liberation/LiberationSans-Italic.ttf",
+            f"{LIN}/dejavu/DejaVuSans-Oblique.ttf"
+        ],
     }
     for name, paths in defs.items():
         for p in paths:
