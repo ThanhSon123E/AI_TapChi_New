@@ -557,11 +557,20 @@ def analyze_content(ordered_items: list, api_key: str, keep_original: bool = Tru
         cleaned_hint_author = ""
     detected_meta = {"author": cleaned_hint_author, "topic": hint_desc}
 
+    last_error_msg = "Không thể kết nối đến nhà cung cấp dịch vụ AI."
     for model in models:
         try:
+            print(f"[{ai_name}] Đang gọi API với model: {model}...")
             resp = _requests.post(url,
                 headers=headers,
                 json={"model": model, "messages": [{"role": "system", "content": _SYSTEM}, {"role": "user", "content": user_prompt}]}, timeout=60)
+            
+            if resp.status_code != 200:
+                error_body = resp.text
+                print(f"[{ai_name} ERROR] Gọi API thất bại. HTTP Status: {resp.status_code}. Response: {error_body}")
+                last_error_msg = f"HTTP {resp.status_code}: {error_body}"
+                raise RuntimeError(last_error_msg)
+                
             raw = resp.json()["choices"][0]["message"]["content"].strip().replace("```json", "").replace("```", "")
             s, e = raw.find("["), raw.rfind("]") + 1
             results = json.loads(raw[s:e])
@@ -579,27 +588,13 @@ def analyze_content(ordered_items: list, api_key: str, keep_original: bool = Tru
             print(f"[{ai_name}] -> Xử lý thành công bằng mô hình AI: {model}")
             break
         except Exception as e:
+            last_error_msg = str(e)
             print(f"[{ai_name} DEBUG] Model {model} failed: {e}")
             pass
     
-    # === HEURISTIC FALLBACK CLASSIFIER ===
-    # Nếu tất cả API AI đều thất bại, tự động gán nhãn bằng thuật toán quy tắc để dàn trang tạp chí đẹp mắt!
     if not labels_map:
-        print(f"[{ai_name} WARNING] Sử dụng bộ phân loại Heuristic dự phòng do AI API bị lỗi kết nối hoặc hết quota!")
-        print(f"[{ai_name}] -> Xử lý bằng thuật toán dự phòng: Heuristic Rule-Based Classifier")
-        for idx, item in enumerate(text_blocks):
-            content = item["content"].strip()
-            kind = "body"
-            if idx == 0:
-                kind = "intro"
-            elif len(content) < 90 and not content.endswith(".") and not content.endswith("?") and not content.endswith("!"):
-                kind = "heading"
-            elif (content.startswith("“") and content.endswith("”")) or (content.startswith("\"") and content.endswith("\"")):
-                if len(content) < 180:
-                    kind = "pullquote"
-            elif len(content) < 40:
-                kind = "caption"
-            labels_map[idx] = kind
+        # Nếu gọi AI thất bại (do API Key sai, v.v.), chúng ta quăng lỗi dừng chương trình ngay lập tức để báo cho người dùng biết
+        raise RuntimeError(f"Lỗi gọi dịch vụ AI (Vui lòng kiểm tra lại cấu hình API Key trong trang Quản trị Settings): {last_error_msg}")
 
     # Kết hợp lại với ảnh theo đúng trình tự ban đầu
     final = []
