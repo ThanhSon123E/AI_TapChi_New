@@ -209,6 +209,7 @@ const translations = {
         "Lỗi chi tiết:": "Detailed error:",
         "Không thể gửi yêu cầu kiểm tra bằng Key ": "Unable to send test request using Key ",
         " đến server: ": " to server: ",
+        "Lỗi gọi dịch vụ AI. Vui lòng kiểm tra lại cấu hình API Key trong trang Quản trị Settings!": "AI service call failed. Please check your API Key configuration in Admin Settings!",
         
         // AI Providers & Models translations
         "OpenRouter API Key": "OpenRouter API Key",

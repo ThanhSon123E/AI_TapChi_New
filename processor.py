@@ -593,8 +593,10 @@ def analyze_content(ordered_items: list, api_key: str, keep_original: bool = Tru
             pass
     
     if not labels_map:
-        # Nếu gọi AI thất bại (do API Key sai, v.v.), chúng ta quăng lỗi dừng chương trình ngay lập tức để báo cho người dùng biết
-        raise RuntimeError(f"Lỗi gọi dịch vụ AI (Vui lòng kiểm tra lại cấu hình API Key trong trang Quản trị Settings): {last_error_msg}")
+        # In chi tiết lỗi ra terminal phía server để admin tiện kiểm tra và debug
+        print(f"\n[AI API ERROR] Chi tiết lỗi kết nối AI: {last_error_msg}\n")
+        # Quăng lỗi chung, an toàn và thân thiện ra giao diện web
+        raise RuntimeError("Lỗi gọi dịch vụ AI. Vui lòng kiểm tra lại cấu hình API Key trong trang Quản trị Settings!")
 
     # Kết hợp lại với ảnh theo đúng trình tự ban đầu
     final = []
