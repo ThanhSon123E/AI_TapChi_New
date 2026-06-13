@@ -161,6 +161,15 @@ class SystemSetting(db.Model):
     value = db.Column(db.Text)
 
 
+class TemporaryChunk(db.Model):
+    __tablename__ = 'temporary_chunk'
+    id = db.Column(db.Integer, primary_key=True)
+    file_id = db.Column(db.String(100), nullable=False, index=True)
+    chunk_index = db.Column(db.Integer, nullable=False)
+    data = db.Column(db.LargeBinary(length=(2**24)-1), nullable=False) # MediumBlob up to 16MB
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 def get_setting(key, default=None):
     try:
         setting = SystemSetting.query.filter_by(key=key).first()
@@ -573,39 +582,55 @@ def upload_chunk():
         if not re.match(r"^[a-zA-Z0-9_\-]+$", file_id):
             return jsonify({"success": False, "message": "file_id không hợp lệ"}), 400
 
-        chunks_dir = os.path.join(app.config["UPLOAD_FOLDER"], "chunks", file_id)
-        os.makedirs(chunks_dir, exist_ok=True)
+        # Dọn dẹp các chunk mồ côi cũ hơn 1 tiếng
+        try:
+            one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+            TemporaryChunk.query.filter(TemporaryChunk.created_at < one_hour_ago).delete()
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"[WARN] Lỗi dọn dẹp chunk cũ: {e}")
 
-        chunk_path = os.path.join(chunks_dir, f"chunk_{chunk_index}")
-        chunk_file.save(chunk_path)
+        # Đọc dữ liệu nhị phân của chunk
+        chunk_data = chunk_file.read()
 
-        # Kiểm tra xem đã nhận đủ tất cả các chunk chưa
-        all_chunks_exist = True
-        for i in range(total_chunks):
-            if not os.path.exists(os.path.join(chunks_dir, f"chunk_{i}")):
-                all_chunks_exist = False
-                break
+        # Kiểm tra xem chunk này đã tồn tại chưa để tránh trùng lặp do client gửi lại
+        existing_chunk = TemporaryChunk.query.filter_by(file_id=file_id, chunk_index=chunk_index).first()
+        if not existing_chunk:
+            new_chunk = TemporaryChunk(
+                file_id=file_id,
+                chunk_index=chunk_index,
+                data=chunk_data
+            )
+            db.session.add(new_chunk)
+            db.session.commit()
+
+        # Đếm số lượng chunk đã nhận được
+        chunks_count = TemporaryChunk.query.filter_by(file_id=file_id).count()
+        all_chunks_exist = (chunks_count == total_chunks)
 
         if all_chunks_exist:
-            # Tiến hành ghép file
+            # Lấy tất cả các chunk, sắp xếp theo index
+            db_chunks = TemporaryChunk.query.filter_by(file_id=file_id).order_by(TemporaryChunk.chunk_index.asc()).all()
+            
             uid = str(uuid.uuid4())[:8]
             merged_filename = f"{uid}_chunked_{sec_filename}"
             merged_filepath = os.path.join(app.config["UPLOAD_FOLDER"], merged_filename)
 
-            with open(merged_filepath, "wb") as merged_file:
-                for i in range(total_chunks):
-                    chunk_p = os.path.join(chunks_dir, f"chunk_{i}")
-                    with open(chunk_p, "rb") as cf:
-                        merged_file.write(cf.read())
-                    try:
-                        os.remove(chunk_p)
-                    except Exception as e:
-                        print(f"[WARN] Không thể xóa chunk tạm {chunk_p}: {e}")
+            # Đảm bảo thư mục upload tồn tại
+            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
+            with open(merged_filepath, "wb") as merged_file:
+                for db_chunk in db_chunks:
+                    merged_file.write(db_chunk.data)
+
+            # Xoá các chunk tạm trong CSDL
             try:
-                os.rmdir(chunks_dir)
+                TemporaryChunk.query.filter_by(file_id=file_id).delete()
+                db.session.commit()
             except Exception as e:
-                print(f"[WARN] Không thể xóa thư mục chunk tạm {chunks_dir}: {e}")
+                db.session.rollback()
+                print(f"[WARN] Lỗi xóa chunk sau khi ghép: {e}")
 
             # Trích xuất tác giả sau khi ghép xong (chỉ áp dụng cho file .docx)
             author = ""
@@ -744,6 +769,7 @@ def background_magazine_job(job_id, user_id, docx_paths, pdf_path, journal_meta,
             llm_model = get_setting("llm_model", "openai/gpt-4o-mini")
             
             api_key = ""
+            from_db = True
             if llm_provider == "openai":
                 api_key = get_setting("openai_api_key", "")
             elif llm_provider == "openrouter":
@@ -756,6 +782,13 @@ def background_magazine_job(job_id, user_id, docx_paths, pdf_path, journal_meta,
             # Fallback nếu API key trống
             if not api_key:
                 api_key = os.environ.get("OPENROUTER_API_KEY", "")
+                from_db = False
+                
+            key_preview = f"{api_key[:6]}...{api_key[-4:]}" if api_key and len(api_key) > 10 else "trống"
+            if from_db:
+                print(f"[CONFIG] Lấy API Key từ DATABASE. Key đang dùng: '{key_preview}' (Provider: {llm_provider})")
+            else:
+                print(f"[CONFIG] API Key trong DB trống! Fallback lấy từ FILE .ENV. Key đang dùng: '{key_preview}' (Provider: {llm_provider})")
 
             process_docx_to_pdf(
                 file_paths=docx_paths, 
